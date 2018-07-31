@@ -740,3 +740,39 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
                                     use_anim_action_all=False)
 
 
+def export_xml_files(raider_file_obj):
+    if os.path.exists(raider_file_obj.object_xml_folder):
+        assert os.path.isdir(raider_file_obj.object_xml_folder)
+    else:
+        os.makedirs(raider_file_obj.object_xml_folder)
+
+    if raider_file_obj.elu_xml_file:
+        filename = os.path.basename(raider_file_obj.elu_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.elu_xml_file, dest_path)
+
+    if raider_file_obj.animation_xml_file:
+        filename = os.path.basename(raider_file_obj.animation_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.animation_xml_file, dest_path)
+
+    if raider_file_obj.animation_event_xml_file:
+        filename = os.path.basename(raider_file_obj.animation_event_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.animation_event_xml_file, dest_path)
+
+    if raider_file_obj.animation_info_xml_file:
+        filename = os.path.basename(raider_file_obj.animation_info_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.animation_info_xml_file, dest_path)
+
+    if raider_file_obj.animation_sound_event_xml_file:
+        filename = os.path.basename(raider_file_obj.animation_sound_event_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.animation_sound_event_xml_file, dest_path)
+
+    if raider_file_obj.scene_xml_file:
+        filename = os.path.basename(raider_file_obj.scene_xml_file)
+        dest_path = raider_file_obj.object_xml_folder + os.sep + filename
+        shutil.copyfile(raider_file_obj.scene_xml_file, dest_path)
+
