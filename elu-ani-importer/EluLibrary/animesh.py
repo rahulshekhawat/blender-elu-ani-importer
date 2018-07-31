@@ -9,18 +9,21 @@
 """
 
 import os
-from . import aniparser
-from . import raidflags
-from . import globalvars
-from . import binaryreader
-from . import commonfunctions
-from . import datatypes
+import aniparser
+import raidflags
+import globalvars
+import binaryreader
+import commonfunctions
+import errorhandling
+from datatypes import FAniHeader
+from datatypes import FAniNode
+from datatypes import EAnimationType
 
 
 class FAniMesh:
 
     def __init__(self, FilePath):
-        self.AniHeader = datatypes.FAniHeader()
+        self.AniHeader = FAniHeader()
         self.AniMeshNodes = []
         self.AniRootNode = None
         self.FilePath = FilePath
@@ -30,7 +33,7 @@ class FAniMesh:
             assert commonfunctions.GetFileExtension(self.FilePath) == '.ani', \
             "Assertion Failed: File extension is not .ani, FilePath: {0}".format(FilePath)
         except AssertionError as err:
-            pass
+            errorhandling.HandleAssertionError(err)
         self.AniFileStream = open(FilePath, 'rb')
         self.LoadAndParseAniFile()
 
@@ -40,7 +43,7 @@ class FAniMesh:
         self.AniHeader.MaxFrame = binaryreader.ReadInt(self.AniFileStream, 1)[0]
         self.AniHeader.ModelNum = binaryreader.ReadInt(self.AniFileStream, 1)[0]
         # self.AniHeader.AniType = binaryreader.ReadInt(self.AniFileStream, 1)[0]
-        self.AniHeader.AniType = datatypes.EAnimationType(binaryreader.ReadInt(self.AniFileStream, 1)[0])
+        self.AniHeader.AniType = EAnimationType(binaryreader.ReadInt(self.AniFileStream, 1)[0])
 
         print("Ani Version: {0}, ani maxframe: {1}, ani anitype: {2}".format(self.AniHeader.Version, self.AniHeader.MaxFrame, self.AniHeader.AniType))
 
@@ -68,11 +71,11 @@ class FAniMesh:
             pass
 
         for i in range(self.AniHeader.ModelNum):
-            AniNode = datatypes.FAniNode()
-            if self.AniHeader.AniType == datatypes.EAnimationType.RAniType_Vertex:
+            AniNode = FAniNode()
+            if self.AniHeader.AniType == EAnimationType.RAniType_Vertex:
                 # if self.AniHeader.AniType == 1:
                 LoaderObj.LoadVertexAni(AniNode, self.AniFileStream)
-            elif self.AniHeader.AniType == datatypes.EAnimationType.RAniType_Bone:
+            elif self.AniHeader.AniType == EAnimationType.RAniType_Bone:
                 # elif self.AniHeader.AniType == 2:
                 LoaderObj.LoadBoneAni(AniNode, self.AniFileStream)
                 if AniNode.Name == "Bip01":
@@ -83,4 +86,3 @@ class FAniMesh:
             LoaderObj.LoadVisibilityKey(AniNode, self.AniFileStream)
             self.AniMeshNodes.append(AniNode)
         return
-

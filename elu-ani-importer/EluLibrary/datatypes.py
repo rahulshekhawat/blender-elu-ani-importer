@@ -10,10 +10,10 @@
 
 import os
 import enum
+import raidflags
+import binaryreader
+import globalvars
 import struct
-from . import globalvars
-from . import raidflags
-from . import binaryreader
 
 
 class FMatrix:

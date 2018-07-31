@@ -11,10 +11,12 @@ This module contains functions for loading and verifying ani files
 
 import math
 import struct
-from . import globalvars
-from . import datatypes
-from . import binaryreader
-from . import raidflags
+import globalvars
+import errorhandling
+import datatypes
+import binaryreader
+import raidflags
+import filelogger
 from abc import ABC, abstractmethod
 
 
@@ -65,7 +67,7 @@ class FAniFileLoaderImpl_v6(FAniFileLoaderImpl):
 
             self.LoadVertexAniBoundingBox(Node, FileStream)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
     
     def LoadBoneAni(self, Node, FileStream, Offset=None):
         try:
@@ -108,7 +110,7 @@ class FAniFileLoaderImpl_v6(FAniFileLoaderImpl):
                         Node.ScaleKeyTrack.Data.append(ScaleKey)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
         
     def LoadVisibilityKey(self, Node, FileStream, Offset=None):
         try:
@@ -139,7 +141,7 @@ class FAniFileLoaderImpl_v6(FAniFileLoaderImpl):
             return False
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FAniFileLoaderImpl_v7(FAniFileLoaderImpl_v6):
@@ -152,7 +154,7 @@ class FAniFileLoaderImpl_v7(FAniFileLoaderImpl_v6):
             Node.BoundingBox.vmin = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
             Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FAniFileLoaderImpl_v9(FAniFileLoaderImpl_v7):
@@ -174,7 +176,7 @@ class FAniFileLoaderImpl_v9(FAniFileLoaderImpl_v7):
             return False
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FAniFileLoaderImpl_v11(FAniFileLoaderImpl_v9):
@@ -220,7 +222,7 @@ class FAniFileLoaderImpl_v11(FAniFileLoaderImpl_v9):
                     Node.ScaleKeyTrack.Data.append(ScaleKey)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
         
     def LoadVisibilityKey(self, Node, FileStream, Offset=None):
         try:
@@ -234,7 +236,7 @@ class FAniFileLoaderImpl_v11(FAniFileLoaderImpl_v9):
                     Node.VisKeyTrack.Data.append(VisKey)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FAniFileLoaderImpl_v12(FAniFileLoaderImpl_v11):
@@ -273,6 +275,8 @@ class FAniFileLoaderImpl_v12(FAniFileLoaderImpl_v11):
                     LastPosKey = Node.PositionKeyTrack.Data[AnimType_1.Count - 1]
                     Node.PositionKeyTrack.Data.append(LastPosKey)
                 else:
+                    Message = "{0} node error: RAnimType_1.CountType is incorrect.".format(Node.Name)
+                    filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Error)
                     return
             
             AnimType_2 = datatypes.FAnimType(binaryreader.ReadInt(FileStream, 3))
@@ -320,6 +324,8 @@ class FAniFileLoaderImpl_v12(FAniFileLoaderImpl_v11):
                     LastQuatKey = Node.RotationKeyTrack.Data[AnimType_2.Count - 1]
                     Node.RotationKeyTrack.Data.append(LastQuatKey)
                 else:
+                    Message = "{0} node error: RAnimType_2.CountType is incorrect.".format(Node.Name)
+                    filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Error)
                     return
 
             AnimType_3 = datatypes.FAnimType(binaryreader.ReadInt(FileStream, 3))
@@ -332,4 +338,4 @@ class FAniFileLoaderImpl_v12(FAniFileLoaderImpl_v11):
                     Node.ScaleKeyTrack.Data.append(ScaleKey)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)

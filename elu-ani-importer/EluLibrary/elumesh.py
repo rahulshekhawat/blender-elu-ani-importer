@@ -9,13 +9,15 @@
 """
 
 import os
-from . import eluparser
-from . import raidflags
-from . import binaryreader
-from . import eluparser
-from . import globalvars
-from . import commonfunctions
-from . import datatypes
+import eluparser
+import raidflags
+import binaryreader
+import errorhandling
+import eluparser
+import globalvars
+import commonfunctions
+from datatypes import FEluHeader
+from datatypes import FEluNode
 
 
 class FEluMesh:
@@ -24,7 +26,7 @@ class FEluMesh:
     """
 
     def __init__(self, FilePath):
-        self.EluHeader = datatypes.FEluHeader()
+        self.EluHeader = FEluHeader()
         self.EluMeshNodes = []
         self.FilePath = FilePath
         self.SourceDir = os.path.dirname(FilePath)
@@ -33,7 +35,7 @@ class FEluMesh:
             commonfunctions.GetFileExtension(self.FilePath) == '.elu'\
             "Assertion Failed: File extension is not .elu, FilePath: {0}".format(FilePath)
         except AssertionError as err:
-            pass
+            errorhandling.HandleAssertionError(err)
         self.EluFileStream = open(FilePath, 'rb')
         self.LoadAndParseEluFile()
 
@@ -75,7 +77,7 @@ class FEluMesh:
             pass
                     
         for i in range(self.EluHeader.MeshNum):
-            EluNode = datatypes.FEluNode()
+            EluNode = FEluNode()
             LoaderObj.Load(EluNode, self.EluFileStream)
             self.EluMeshNodes.append(EluNode)
         return

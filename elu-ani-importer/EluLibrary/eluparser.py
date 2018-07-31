@@ -10,10 +10,12 @@ This module contains functions for loading and verifying elu files
 """
 
 import struct
-from . import raidflags
-from . import datatypes
-from . import binaryreader
-from . import globalvars
+import raidflags
+import datatypes
+import binaryreader
+import filelogger
+import globalvars
+import errorhandling
 # from abc import ABC, abstractmethod
 
 
@@ -58,7 +60,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
             Node.NodeParentName = binaryreader.ReadWord(FileStream)
             Node.ParentNodeID = binaryreader.ReadInt(FileStream, 1)[0]
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadInfo(self, Node, FileStream, Offset):
         try:
@@ -66,7 +68,8 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
             try:
                 Node.MeshAlign = datatypes.RMeshAlign(binaryreader.ReadInt(FileStream, 1)[0])
             except ValueError as er:
-                pass
+                Message = "Node.MeshAlign value is out of allowed range."
+                filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
             
             if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER11:
                 # Unused data
@@ -79,7 +82,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                 Node.BaseVisibility = binaryreader.ReadInt(FileStream, 1)[0]
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
@@ -112,7 +115,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                 Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadFace(self, Node, FileStream, Offset):
         try:
@@ -159,9 +162,9 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                         for MeshPolygonData in Node.PolygonTable), \
                         "Assertion Failed: TotalDegrees value does not match expected value for node - {}".format(Node.NodeName)
                     except AssertionError as err:
-                        pass
+                        errorhandling.HandleAssertionError(err)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadVertexInfo(self, Node, FileStream, Offset):
         try:
@@ -181,7 +184,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                     assert Node.PointsCount == Node.PhysiqueCount, \
                     "Assertion Failed: Points Count is not same as Physique Count - {0}".format(Node.NodeName)
                 except AssertionError as err:
-                    pass
+                    errorhandling.HandleAssertionError(err)
                 for i in range(Node.PhysiqueCount):
                     Size = binaryreader.ReadInt(FileStream, 1)[0]
                     PhysiqueInfo = datatypes.FPhysiqueInfo()
@@ -210,7 +213,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                         PhysiqueInfo.Num = 3
                     
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
     
     def LoadEtc(self, Node, FileStream, Offset):
         try:
@@ -265,7 +268,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
             # @todo GetBipID
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v13(FEluNodeLoaderImpl_v12):
@@ -287,7 +290,7 @@ class FEluNodeLoaderImpl_v13(FEluNodeLoaderImpl_v12):
             Node.BoundingBox.vmin = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
             Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))        
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v14(FEluNodeLoaderImpl_v13):
@@ -329,7 +332,7 @@ class FEluNodeLoaderImpl_v14(FEluNodeLoaderImpl_v13):
                 Node.TexCoordTable.append(Vec)
                         
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
@@ -363,10 +366,10 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
                     for MeshPolygonData in Node.PolygonTable), \
                     "Assertion Failed: TotalDegrees value does not match expected value for node - {}".format(Node.NodeName)
                 except AssertionError as err:
-                    pass
+                    errorhandling.HandleAssertionError(err)
                     
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
@@ -405,7 +408,7 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
             LightMapTexCoordTableCount = binaryreader.ReadInt(FileStream, 1)[0]
             FileStream.seek(FileStream.tell() + 3 * 4 * LightMapTexCoordTableCount)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadEtc(self, Node, FileStream, Offset):
         try:
@@ -463,7 +466,7 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
             Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))  
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v16(FEluNodeLoaderImpl_v15):
@@ -507,7 +510,7 @@ class FEluNodeLoaderImpl_v16(FEluNodeLoaderImpl_v15):
             LightMapTexCoordTableCount = binaryreader.ReadInt(FileStream, 1)[0]
             FileStream.seek(FileStream.tell() + 3 * 4 * LightMapTexCoordTableCount)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v17(FEluNodeLoaderImpl_v16):
@@ -549,7 +552,7 @@ class FEluNodeLoaderImpl_v17(FEluNodeLoaderImpl_v16):
                 Node.TexCoordTable.append(Vec)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v18(FEluNodeLoaderImpl_v17):
@@ -593,7 +596,7 @@ class FEluNodeLoaderImpl_v18(FEluNodeLoaderImpl_v17):
                 Node.TexCoordExtraTable.append(Vec)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
 
 class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
@@ -607,7 +610,7 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
             Node.ParentNodeID = binaryreader.ReadInt(FileStream, 1)[0]
             Node.NodeParentName = binaryreader.ReadWord(FileStream)
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
     
     def LoadInfo(self, Node, FileStream, Offset):
         try:
@@ -618,11 +621,12 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
             try:
                 Node.MeshAlign = datatypes.RMeshAlign(binaryreader.ReadInt(FileStream, 1)[0])
             except ValueError as er:
-                pass
+                Message = "Node.MeshAlign value is out of allowed range."
+                filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
             Node.LODProjectIndex = binaryreader.ReadInt(FileStream, 1)[0]
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
@@ -660,7 +664,7 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
                 Node.TangentBinTable.append(Vec)
 
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)
 
     def LoadEtc(self, Node, FileStream, Offset):
         try:
@@ -713,4 +717,4 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
 
             # @todo fix bounding box
         except struct.error as err:
-            pass
+            errorhandling.HandleStructUnpackError(err)

@@ -19,9 +19,11 @@ def GetCurrentTimeAsString():
 
 def IsValidFilePath(FilePath):
     """
-    Returns true if FilePath points to a valid file
+    @todo - function not implemented yet
+    Returns true if FilePath is a valid-
     """
-    return os.path.isfile(FilePath)
+    # @todo Finish code
+    return None
 
 
 def ListSubdirs(DirPath):
