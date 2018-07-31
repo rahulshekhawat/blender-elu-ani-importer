@@ -51,7 +51,12 @@ class EExportType(enum.Enum):
 # SET FOLLOWING BEFORE IMPORT/EXPORT
 MODEL_FOLDER_TO_EXPORT = ERaiderZModelFolder.Monster    # This will export models only from inside 'monster' folder. See filedatatypes.py
 EXPORT_TYPE = EExportType.SelectiveExport               # SelectiveExport will result in exporting only those models that contain SELECTIVE_EXPORT_KEYSTRING
-SELECTIVE_EXPORT_KEYSTRING = "arek"    
+SELECTIVE_EXPORT_KEYSTRING = "arek"
+
+# SET SourceDir TO datadump/data FOLDER. DON'T LEAVE IT NONE
+SourceDir = None
+# SET DestinationDir TO WHERE YOU WOULD LIKE TO EXPORT FBX FILES. DON'T LEAVE IT NONE
+DestinationDir = None
 
 def get_recordfile():
     LogDirectory = os.getcwd() + os.sep + "Logs"
@@ -130,7 +135,7 @@ def process_modular_skeletal_elumodel(RaiderFileObj, AniFilePaths):
 def main(RecordFileStream):
     RecordFileList = RecordFileStream.read().split('\n')
 
-    RaiderFilesManager = filedatatypes.FRaiderFilesManager()
+    RaiderFilesManager = filedatatypes.FRaiderFilesManager(SourceDir, DestinationDir)
     AniFilePaths = commonfunctions.FindFiles(RaiderFilesManager.SourceDir, ".ani")
 
     if EXPORT_TYPE == EExportType.MassExport:
