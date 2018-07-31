@@ -271,3 +271,346 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
             bmesh.update_edit_mesh(mesh)
             bpy.ops.object.mode_set(mode="OBJECT")
 
+
+def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
+    # Skeleton
+    armature_object = None
+    for obj in bpy.data.objects:
+        if obj.type == "ARMATURE":
+            armature_object = obj
+
+    for animation in animations:
+        ani_mesh_obj = FAniMesh(animation)
+
+        if ani_mesh_obj.AniHeader.AniType == datatypes.EAnimationType.RAniType_Bone:
+            scene = bpy.context.scene
+            scene.frame_start = 0
+            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+            scene.objects.active = armature_object
+
+            animation_basename = os.path.basename(animation)
+            action_name = animation_basename.split('.')[0].strip()
+
+            if armature_object.animation_data is None:
+                armature_object.animation_data_create()
+            else:
+                bpy.ops.object.mode_set(mode="POSE")
+                for bone in armature_object.pose.bones:
+                    armature_object.data.bones[bone.name].select = True
+
+                bpy.ops.pose.rot_clear()
+                bpy.ops.pose.scale_clear()
+                bpy.ops.pose.transforms_clear()
+
+                armature_object.animation_data_clear()
+                armature_object.animation_data_create()
+                bpy.ops.object.mode_set(mode="OBJECT")
+
+            action = bpy.data.actions.new(action_name)
+            armature_object.animation_data.action = action
+
+            pose = armature_object.pose
+
+            bpy.ops.object.mode_set(mode="POSE")
+
+            for EluNode in elu_mesh_obj.EluMeshNodes:
+                if EluNode.BaseVisibility == 0:
+                    pose_bone = pose.bones[EluNode.NodeName]
+                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                    pose_bone.keyframe_insert(data_path='scale',
+                                            frame=0,
+                                            group=EluNode.NodeName)
+            
+            # Root motion
+            for AniNode in ani_mesh_obj.AniMeshNodes:
+                if AniNode.Name == "dummy_loc":
+                    try:
+                        pose_bone = pose.bones[AniNode.Name]
+                        default_armature_object_inverted_world_matrix = armature_object.matrix_world.inverted()
+
+                        for i in range(AniNode.PositionKeyTrack.Count):
+                            try:
+                                frame = AniNode.PositionKeyTrack.Data[i].Frame / 160
+                            except IndexError:
+                                print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
+                                raise Exception
+                            elu_position = AniNode.PositionKeyTrack.Data[i].Vector
+                            position_vector = Vector(elu_position.GetVecDataAsTuple())
+
+                            pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
+                            matrix_diff = default_armature_object_inverted_world_matrix * pbone_matrix_inverted * position_vector
+                            armature_object.location = matrix_diff
+
+                            armature_object.keyframe_insert(data_path="location",
+                                                            frame=frame,
+                                                            group=armature_object.name)
+
+                        for i in range(AniNode.RotationKeyTrack.Count):
+                            try:
+                                frame = AniNode.RotationKeyTrack.Data[i].Frame / 160
+                            except IndexError:
+                                print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
+                                raise Exception
+                            elu_quat = AniNode.RotationKeyTrack.Data[i].Quat
+                            rot_quat = Quaternion((elu_quat.W, elu_quat.X, elu_quat.Y, elu_quat.Z))
+                            pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
+                            diff_quat = pbone_quat_inverted * rot_quat
+                            armature_object.rotation_quaternion = diff_quat
+
+                            armature_object.keyframe_insert(data_path='rotation_quaternion',
+                                                            frame=frame,
+                                                            group=armature_object.name)
+                    except Exception:
+                        pass
+
+            for AniNode in ani_mesh_obj.AniMeshNodes:
+                try:
+                    pose_bone = pose.bones[AniNode.Name]
+                except Exception:
+                    print ("Couldn't find pose bone: ", AniNode.Name)
+                    continue
+
+                frame = 0
+                elu_position = AniNode.BaseTranslation
+                if elu_position:
+                    position_vector = Vector(elu_position.GetVecDataAsTuple())
+                    if pose_bone.parent:
+                        result = pose_bone.parent.matrix * position_vector
+                        armature_matrix_inverse = armature_object.matrix_world.inverted()
+                        pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
+                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * result
+                        pose_bone.location = matrix_diff
+                    else:
+                        armature_matrix_inverse = armature_object.matrix_world.inverted()
+                        pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
+                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * position_vector
+                        pose_bone.location = matrix_diff
+
+                    pose_bone.keyframe_insert(data_path="location",
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                for i in range(AniNode.PositionKeyTrack.Count):
+                    try:
+                        frame = AniNode.PositionKeyTrack.Data[i].Frame / 160
+                    except IndexError:
+                        print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
+                        raise Exception
+                    elu_position = AniNode.PositionKeyTrack.Data[i].Vector
+                    position_vector = Vector(elu_position.GetVecDataAsTuple())
+                    if pose_bone.parent:
+                        result = pose_bone.parent.matrix * position_vector
+                        armature_matrix_inverse = armature_object.matrix_world.inverted()
+                        pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
+                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * result
+                        pose_bone.location = matrix_diff
+                    else:
+                        armature_matrix_inverse = armature_object.matrix_world.inverted()
+                        pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
+                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * position_vector
+                        pose_bone.location = matrix_diff
+
+                    pose_bone.keyframe_insert(data_path="location",
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                frame = 0
+                elu_quat = AniNode.BaseRotation
+                if elu_quat:
+                    rot_quat = Quaternion((elu_quat.W, elu_quat.X, elu_quat.Y, elu_quat.Z))
+                    if pose_bone.parent:
+                        result_quat = pose_bone.parent.matrix.to_quaternion() * rot_quat
+                        pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
+                        diff_quat = pbone_quat_inverted * result_quat
+                        pose_bone.rotation_quaternion = diff_quat
+                    else:
+                        pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
+                        diff_quat = pbone_quat_inverted * rot_quat
+                        pose_bone.rotation_quaternion = diff_quat
+
+                    pose_bone.keyframe_insert(data_path='rotation_quaternion',
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                for i in range(AniNode.RotationKeyTrack.Count):
+                    frame = AniNode.RotationKeyTrack.Data[i].Frame / 160
+                    elu_quat = AniNode.RotationKeyTrack.Data[i].Quat
+                    rot_quat = Quaternion((elu_quat.W, elu_quat.X, elu_quat.Y, elu_quat.Z))
+                    if pose_bone.parent:
+                        result_quat = pose_bone.parent.matrix.to_quaternion() * rot_quat
+                        pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
+                        diff_quat = pbone_quat_inverted * result_quat
+                        pose_bone.rotation_quaternion = diff_quat
+                    else:
+                        pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
+                        diff_quat = pbone_quat_inverted * rot_quat
+                        pose_bone.rotation_quaternion = diff_quat
+                    pose_bone.keyframe_insert(data_path='rotation_quaternion',
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                frame = 0
+                elu_scale = AniNode.BaseScale
+                if elu_scale:
+                    elu_scale = AniNode.BaseScale
+                    pose_bone.keyframe_insert(data_path="scale",
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                for i in range(AniNode.ScaleKeyTrack.Count):
+                    frame = AniNode.ScaleKeyTrack.Data[i].Frame / 160
+                    elu_scale = AniNode.ScaleKeyTrack.Data[i].Vector
+
+                    scale_vector = Vector(elu_scale.GetVecDataAsTuple())
+                    pose_bone.scale = scale_vector
+                    pose_bone.keyframe_insert(data_path="scale",
+                                            frame=frame,
+                                            group=AniNode.Name)
+
+                # Begin visibility keyframes fix
+                source_frames = []
+                source_viskeys = []
+                for i in range(AniNode.VisKeyTrack.Count):
+                    frame = AniNode.VisKeyTrack.Data[i].Frame / 160
+                    vis_key = AniNode.VisKeyTrack.Data[i].Vis
+                    source_frames.append(frame)
+                    source_viskeys.append(vis_key)
+
+                final_frames, final_viskeys = generate_viskeys(source_frames, source_viskeys)
+
+                # Reset AniNode viskey data
+                AniNode.VisKeyTrack.Count = len(final_frames)
+                AniNode.VisKeyTrack.Data = []
+                for i in range(len(final_frames)):
+                    VisKey = datatypes.FVisKey()
+                    VisKey.Frame = final_frames[i]
+                    VisKey.Vis = final_viskeys[i]
+                    AniNode.VisKeyTrack.Data.append(VisKey)
+
+                # End visibility keyframes fix
+
+                for i in range(AniNode.VisKeyTrack.Count):
+                    frame = AniNode.VisKeyTrack.Data[i].Frame
+                    vis_key = AniNode.VisKeyTrack.Data[i].Vis
+
+                    SET_VISKEY = False
+                    if 0 <= int(frame) <= ani_mesh_obj.AniHeader.MaxFrame:
+                        if int(frame) == 0:
+                            if round(vis_key) == 0:
+                                if pose_bone.scale == Vector((1, 1, 1)):
+                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    SET_VISKEY = True
+                            elif round(vis_key) == 1:
+                                if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
+                                    pose_bone.scale = Vector((1, 1, 1))
+                                    SET_VISKEY = True
+                        elif int(frame) == ani_mesh_obj.AniHeader.MaxFrame:
+                            if round(vis_key) == 0:
+                                if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
+                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    SET_VISKEY = True
+                            elif round(vis_key) == 1:
+                                if pose_bone.scale == Vector((1, 1, 1)):
+                                    pose_bone.scale = Vector((1, 1, 1))
+                                    SET_VISKEY = True
+                        else:
+                            current_frame = int(frame)
+                            previous_frame = int(AniNode.VisKeyTrack.Data[i - 1].Frame / 160)
+                            # previous_frame = current_frame - 1
+
+                            if current_frame == previous_frame:
+                                frame += 1
+                                if round(vis_key) == 0:
+                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    SET_VISKEY = True
+                                elif round(vis_key) == 1:
+                                    pose_bone.scale = Vector((1, 1, 1))
+                                    SET_VISKEY = True
+                            else:
+                                if round(vis_key) == 0:
+                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    SET_VISKEY = True
+                                elif round(vis_key) == 1:
+                                    pose_bone.scale = Vector((1, 1, 1))
+                                    SET_VISKEY = True
+                    else:
+                        pass
+
+                    if SET_VISKEY is True:
+                        pose_bone.keyframe_insert(data_path="scale",
+                                                frame=frame,
+                                                group=AniNode.Name)
+            
+            # Begin rotation bug (MBAE-3) fix
+
+            """
+            fcurves = armature_object.animation_data.action.fcurves
+            for fcurve in fcurves:
+                for kf in fcurve.keyframe_points:
+                    kf.interpolation = "CONSTANT"
+            """     
+            # End rotation bug (MBAE-3) fix
+
+            bpy.ops.object.mode_set(mode="OBJECT")
+
+            if os.path.exists(raider_file_obj.object_ani_folder):
+                assert os.path.isdir(raider_file_obj.object_ani_folder)
+            else:
+                os.makedirs(raider_file_obj.object_ani_folder)
+            dest_filepath = raider_file_obj.object_ani_folder + os.sep + "A_" + action_name + ".fbx"
+
+            try:
+                bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                        use_default_take=False,
+                                        check_existing=True,
+                                        version="ASCII6100",
+                                        object_types={"ARMATURE"},
+                                        use_anim=True,
+                                        use_anim_action_all=True)
+
+                bpy.data.actions.remove(action, do_unlink=True)
+            except Exception:
+                print(action_name, " failed to export")
+
+            # Following line prevents animations from glitching out when mass exporting animations with root motion.
+            armature_object.matrix_world = Matrix.Identity(4)
+
+        else:
+            # @todo vertex animation
+            scene = bpy.context.scene
+            scene.frame_start = 0
+            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+
+            for AniNode in ani_mesh_obj.AniMeshNodes:
+                mesh = None
+                try:
+                    mesh_obj = bpy.data.objects[AniNode.Name + '-mesh']
+                    mesh = mesh_obj.data
+                    print("\n\nmesh found\n\n", AniNode.Name)
+                except:
+                    continue
+
+                scene.objects.active = mesh_obj
+
+                animation_basename = os.path.basename(animation)
+                action_name = animation_basename.split('.')[0].strip()
+                action = bpy.data.actions.new(action_name)
+
+                mesh.animation_data_create()
+                mesh.animation_data.action = action
+
+                data_path = "vertices[%d].co"
+                vec_z = Vector((0.0, 0.0, 1.0))               
+
+                """
+                if bpy.ops.object.mode_set.poll():
+                    bpy.ops.object.mode_set(mode="EDIT")
+                else:
+                    print("mode_set() context is incorrect. Current mode is: {0}".format(bpy.context.mode))
+                    return
+                
+                bm = bmesh.from_edit_mesh(mesh)
+
+                bpy.ops.object.mode_set(mode="OBJECT")
+                """
+
