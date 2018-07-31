@@ -776,3 +776,80 @@ def export_xml_files(raider_file_obj):
         dest_path = raider_file_obj.object_xml_folder + os.sep + filename
         shutil.copyfile(raider_file_obj.scene_xml_file, dest_path)
 
+
+def generate_viskeys(frames_list, viskeys_list):
+    """
+    Generates proper viskeys for blender from .ani viskeys
+    """
+    result_set = set()
+    index = 0
+    while index < len(frames_list):
+        current_keyframe = int(frames_list[index])
+        current_viskey = round(viskeys_list[index])
+
+        try:
+            next_keyframe = int(frames_list[index + 1])
+            next_viskey = round(viskeys_list[index + 1])
+        except:
+            break
+        # print("Current_keyframe: {0}, next_keyframe: {1}, current_viskey: {2}, next_viskey: {3}".format(current_keyframe, next_keyframe, current_viskey, next_viskey))
+        
+        if current_keyframe == next_keyframe:
+            try:
+                assert current_viskey != next_viskey
+            except AssertionError:
+                # @todo handle assertion error
+                pass
+            next_keyframe = current_keyframe + 1
+            result_set.add((current_keyframe, current_viskey))
+            result_set.add((next_keyframe, next_viskey))
+            index += 1
+        else:
+            if current_viskey == next_viskey:
+                try:
+                    previous_keyframe = int(frames_list[index - 1])
+                    previous_viskey = round(viskeys_list[index - 1])
+                    if previous_keyframe == current_keyframe:
+                        current_keyframe += 1
+                    else:
+                        pass
+                    result_set.add((current_keyframe, current_viskey))
+                    result_set.add((next_keyframe, next_viskey))
+                    index += 1
+                except:
+                    result_set.add((current_keyframe, current_viskey))
+                    result_set.add((next_keyframe, next_viskey))
+                    index += 1
+            else:
+                try:
+                    previous_keyframe = int(frames_list[index - 1])
+                    previous_viskey = round(viskeys_list[index - 1])
+
+                    if previous_keyframe == current_keyframe:
+                        current_keyframe += 1
+                    else:
+                        pass
+                except:
+                    pass
+
+                mid_keyframe = next_keyframe - 1
+                mid_viskey = current_viskey
+                result_set.add((current_keyframe, current_viskey))
+                result_set.add((mid_keyframe, mid_viskey))
+                result_set.add((next_keyframe, next_viskey))
+                index += 1
+
+    result_frames = []
+    result_viskeys = []
+
+    for tup in result_set:
+        result_frames.append(tup[0])
+
+    result_frames.sort()
+
+    for frame in result_frames:
+        for tup in result_set:
+            if frame == tup[0]:
+                result_viskeys.append(tup[1])
+    
+    return result_frames, result_viskeys
