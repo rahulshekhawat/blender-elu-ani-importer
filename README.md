@@ -1,8 +1,10 @@
-# Blender plugin for elu/ani files
+# Blender importer/exporter for elu and ani files
 
-This project contains python scripts to:
-* import single elu model and it's animation files inside blender
-* optionally export single elu modle and it's animations files as fbx
-* batch import elu models (and their animations) and batch export them as fbx
+This project contains scripts that can be used to load .elu models inside blender along with .ani animations and individual or batch export them as fbx.
+
+* Compatible with all .elu versions
+* Compatible with all .ani versions
+* **Not** compatible with vertex animations (less than 0.5% of .ani files contain vertex animations).
+* All exported fbx animations contain root motion
 
 
