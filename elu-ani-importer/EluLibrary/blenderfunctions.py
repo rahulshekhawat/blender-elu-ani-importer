@@ -614,3 +614,129 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 bpy.ops.object.mode_set(mode="OBJECT")
                 """
 
+
+def export_mesh(raider_file_obj, elu_mesh_obj):
+    if os.path.exists(raider_file_obj.object_model_folder):
+        assert os.path.isdir(raider_file_obj.object_model_folder)
+    else:
+        os.makedirs(raider_file_obj.object_model_folder)
+
+    if raider_file_obj.has_animations():
+        dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
+        # else:
+        #   dest_filepath = raider_file_obj.object_model_folder + os.sep + "S_" + raider_file_obj.object_name + ".fbx"
+
+        # if raider_file_obj.has_animations():
+        obj_types = {"ARMATURE", "MESH"}
+        bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                 use_selection=False,
+                                 check_existing=True,
+                                 version="ASCII6100",
+                                 object_types=obj_types,
+                                 # object_types={"ARMATURE", "MESH"},
+                                 use_anim=False,
+                                 use_anim_action_all=False)
+    else:
+        obj_types = {"MESH"}
+        # current_scene = bpy.context.scene
+
+        LOD_Indices = set()
+        for EluNode in elu_mesh_obj.EluMeshNodes:
+            # print(EluNode.NodeName, EluNode.LODProjectIndex)
+            LOD_Indices.add(EluNode.LODProjectIndex)
+
+        for index in LOD_Indices:
+            for obj in bpy.data.objects:
+                obj.select = False
+
+            for EluNode in elu_mesh_obj.EluMeshNodes:
+                if EluNode.LODProjectIndex == index:
+                    for obj in bpy.data.objects:
+                        if obj.name == EluNode.NodeName + "-mesh":
+                            obj.select = True
+            dest_filepath = raider_file_obj.object_model_folder + os.sep + "S_" + \
+                            raider_file_obj.object_name + "_LOD" + str(index) + ".fbx"
+
+            bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                     use_selection=True,
+                                     check_existing=True,
+                                     version="ASCII6100",
+                                     object_types=obj_types,
+                                     # object_types={"ARMATURE", "MESH"},
+                                     use_anim=False,
+                                     use_anim_action_all=False)
+
+
+def export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj):
+    if os.path.exists(raider_file_obj.object_model_folder):
+        assert os.path.isdir(raider_file_obj.object_model_folder)
+    else:
+        os.makedirs(raider_file_obj.object_model_folder)
+    
+    dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
+
+    # if raider_file_obj.has_animations():
+    obj_types = {"ARMATURE", "MESH"}
+    bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                use_selection=False,
+                                check_existing=True,
+                                version="ASCII6100",
+                                object_types=obj_types,
+                                # object_types={"ARMATURE", "MESH"},
+                                use_anim=False,
+                                use_anim_action_all=False)
+
+
+def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
+    if os.path.exists(raider_file_obj.object_model_folder):
+        assert os.path.isdir(raider_file_obj.object_model_folder)
+    else:
+        os.makedirs(raider_file_obj.object_model_folder)
+        
+    # MODULAR_PARTS = ["hair", "chest", "hands", "legs", "feet", "Dummy_eyes",
+    #                 "hat_item", "chest_item", "hands_item", "legs_item", "feet_item", "back_item"]
+
+    MODULAR_PARTS = ["hair", "chest", "hands", "legs", "feet", "back", "hat", "Dummy_eyes", "face"]
+    # MODULAR_PARTS = ["hair", "chest", "hands", "legs", "feet", "Dummy_eyes", "back_item"]
+
+    modular_part_found = False
+    for item_name in MODULAR_PARTS:
+        for obj in bpy.data.objects:
+            obj.select = False
+        for obj in bpy.data.objects:
+            if obj.type == "ARMATURE":
+                amt = obj.data
+                for bone in amt.bones:
+                    bone.select = True
+        mesh_found = False
+        for obj in bpy.data.objects:
+            if obj.name == item_name + '-mesh' or obj.name == item_name + "_item" + '-mesh':
+                obj.select = True
+                mesh_found = True
+                modular_part_found = True
+                
+        dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + "_" + item_name + ".fbx"
+
+        if mesh_found:
+            obj_types = {"ARMATURE", "MESH"}
+            bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                        use_selection=True,
+                                        check_existing=True,
+                                        version="ASCII6100",
+                                        object_types=obj_types,
+                                        use_anim=False,
+                                        use_anim_action_all=False)
+    if not modular_part_found:
+        # if the for loop didn't break
+        dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
+        obj_types = {"ARMATURE", "MESH"}
+        bpy.ops.export_scene.fbx(filepath=dest_filepath,
+                                    use_selection=False,
+                                    check_existing=True,
+                                    version="ASCII6100",
+                                    object_types=obj_types,
+                                    # object_types={"ARMATURE", "MESH"},
+                                    use_anim=False,
+                                    use_anim_action_all=False)
+
+
