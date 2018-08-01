@@ -322,6 +322,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                                             group=EluNode.NodeName)
             
             # Root motion
+            """
             for AniNode in ani_mesh_obj.AniMeshNodes:
                 if AniNode.Name == "dummy_loc":
                     try:
@@ -362,7 +363,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                                                             group=armature_object.name)
                     except Exception:
                         pass
-
+            """
             for AniNode in ani_mesh_obj.AniMeshNodes:
                 try:
                     pose_bone = pose.bones[AniNode.Name]
