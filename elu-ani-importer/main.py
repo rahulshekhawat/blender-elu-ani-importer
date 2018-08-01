@@ -8,14 +8,14 @@
 * Run this script from inside blender.
 """
 
-__author__ = "Ryujin Ishima"
+__author__ = "Rahul Shekhawat"
 __copyright__ = ""
-__credits__ = "[Ryujin Ishima]"
+__credits__ = "[Rahul Shekhawat]"
 __license__ = ""
 __version__ = "1.0.0"
-__maintainer__ = "Ryujin Ishima"
-__email__ = "ryujin.hawk@gmail.com"
-__status__ = "Production"
+__maintainer__ = "Rahul Shekhawat"
+__email__ = "rahul.shekhawat.dev.mail@gmail.com"
+__status__ = "Release"
 
 import os
 main_file_path = os.path.dirname(os.path.realpath(__file__))
