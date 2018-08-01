@@ -22,6 +22,10 @@ This project contains scripts that can be used to load .elu models inside blende
 * Set `DestinationDir` to point to path where you would like to export fbx files
 * Since mass export takes time and there is a possibility that it may fail or you made need to stop the process, I have created a [RecordFile.txt](/elu-ani-importer/Blender/Logs/RecordFile.txt) file that keeps a record of all files that have already been exported. So if you cancel mass export operation in the middle of export and start it later, the export script will skip all the files mentioned in RecordFile. If you would like to load/re-export all those files again, simply delete RecordFile.txt. This is only applicable for MassExport, not SelectiveExport
 
+![Elu model inside blender](https://i.imgur.com/bvzEMzi.png)
+![Elu model exported as fbx](https://i.imgur.com/35LeQdV.png)
+![Elu model imported inside UE4](https://i.imgur.com/9WEnR90.png)
+
 # Warnings
 
 Remove/delete test .elu files from MapObject folder before starting mass export operation to avoid spending hours loading and exporting for each of these "special-case" files. Exported fbx file may exceed over 5-10 GB, and may overflow your RAM while export operation is in progress.
