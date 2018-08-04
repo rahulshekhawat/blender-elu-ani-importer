@@ -1,4 +1,4 @@
-# Blender importer/exporter for elu and ani files
+# Blender importer/exporter for elu and ani files (RaiderZ)
 
 This project contains scripts that can be used to load .elu models and .ani animations inside blender and to export them as fbx files either individually or in mass.
 
