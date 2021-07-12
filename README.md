@@ -9,7 +9,7 @@ This project contains scripts that can be used to load .elu models and .ani anim
 
 # Requirements
 
-* Blender 2.78 or above (haven't tested on lower versions but it should work on any blender version that uses the new python 3 API)
+* Blender 2.78 or 2.79. It won't work on 2.8 and above versions because of the Blender's API changes.
 
 # Using the script
 
