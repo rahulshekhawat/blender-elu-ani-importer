@@ -20,3 +20,4 @@ src/__pycache__/
 elu-ani-importer/EluLibrary/__pycache__/
 
 elu-ani-importer/Logs/
+.idea/
