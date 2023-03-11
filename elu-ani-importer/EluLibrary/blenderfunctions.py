@@ -28,44 +28,57 @@ def reset_blender():
 
 
 def clear_blender():
+    for collection in bpy.data.collections:
+        bpy.data.collections.remove(collection, do_unlink=True)
+
     for action in bpy.data.actions:
         bpy.data.actions.remove(action, do_unlink=True)
 
     for mesh in bpy.data.meshes:
-        bpy.data.meshes.remove(mesh, True)
+        bpy.data.meshes.remove(mesh, do_unlink=True)
 
     for armature in bpy.data.armatures:
-        bpy.data.armatures.remove(armature, True)
+        bpy.data.armatures.remove(armature, do_unlink=True)
 
     for material in bpy.data.materials:
-        bpy.data.materials.remove(material, True)
+        bpy.data.materials.remove(material, do_unlink=True)
 
     for scene in bpy.data.scenes:
         for obj in scene.objects:
-            scene.objects.unlink(obj)
+            scene.objects.unlink(obj, do_unlink=True)
 
     for obj in bpy.data.objects:
-        bpy.data.objects.remove(obj, True)
+        bpy.data.objects.remove(obj, do_unlink=True)
 
 
 def reload_blender():
     bpy.ops.wm.open_mainfile(filepath=bpy.data.filepath)
 
 
+def set_active_blender_object(obj):
+    bpy.context.view_layer.objects.active = obj
+    bpy.context.view_layer.update()
+
+
 def draw_elu_skeleton(elu_mesh_obj):
     armature = bpy.data.armatures.new("root_armature")
     armature_obj = bpy.data.objects.new("armature_obj", armature)
 
-    current_scene = bpy.context.scene
-    current_scene.objects.link(armature_obj)
-    current_scene.objects.active = armature_obj
+    new_collection = bpy.data.collections.new("raiderz")
+    new_collection.objects.link(armature_obj)
 
-    armature_obj.select = True
-    armature.draw_type = "STICK"
-    armature_obj.show_x_ray = True
+    current_scene = bpy.context.scene
+    current_scene.collection.children.link(new_collection)
+
+    # current_scene.objects.link(armature_obj)
+    # current_scene.objects.active = armature_obj
+
+    armature_obj.select_set(True)
+    armature.display_type = "STICK"
+    # armature_obj.show_x_ray = True
     armature.show_names = True
 
-    current_scene.update()
+    set_active_blender_object(armature_obj)
 
     if bpy.ops.object.mode_set.poll():
         bpy.ops.object.mode_set(mode="EDIT")
@@ -100,7 +113,8 @@ def draw_elu_skeleton(elu_mesh_obj):
         else:
             for EluMeshNode in elu_mesh_obj.EluMeshNodes:
                 if edit_bone.name == EluMeshNode.NodeName:
-                    EluMeshNode.BlenderGlobalMatrix = edit_bone.parent.matrix * EluMeshNode.BlenderLocalMatrix
+                    # EluMeshNode.BlenderGlobalMatrix = edit_bone.parent.matrix * EluMeshNode.BlenderLocalMatrix
+                    EluMeshNode.BlenderGlobalMatrix = edit_bone.parent.matrix @ EluMeshNode.BlenderLocalMatrix
                     edit_bone.matrix = EluMeshNode.BlenderGlobalMatrix
 
     bpy.ops.object.mode_set(mode="OBJECT")
@@ -149,8 +163,12 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
         mesh = bpy.data.meshes.new(mesh_name)
         mesh_obj = bpy.data.objects.new(mesh_name, mesh)
 
-        scene = bpy.context.scene
-        scene.objects.link(mesh_obj)
+        # scene = bpy.context.scene
+        out_collection = None
+        for collection in bpy.data.collections:
+            out_collection = collection
+        out_collection.objects.link(mesh_obj)
+        # scene.objects.link(mesh_obj)
 
         faces = []
         for Polygon in EluNode.PolygonTable:
@@ -164,7 +182,11 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
             point = NodePoint.GetVecDataAsTuple()
             points.append(Vector(point))
 
-        scene.objects.active = mesh_obj
+        bpy.context.view_layer.update()
+        bpy.context.view_layer.objects.active = mesh_obj
+        bpy.context.view_layer.update()
+        # scene.objects.active = mesh_obj
+
         mesh.from_pydata(points, [], faces)
 
         mesh.transform(EluNode.BlenderGlobalMatrix)
@@ -191,7 +213,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
                 vertex_groups[EluNode.NodeName].append((vertex_index, 1))
 
         for name, vertex_weight_info in vertex_groups.items():
-            group = mesh_obj.vertex_groups.new(name)
+            group = mesh_obj.vertex_groups.new(name=name)
             for (vertex_index, weight) in vertex_weight_info:
                 group.add([vertex_index], weight, "REPLACE")
 
@@ -214,9 +236,13 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
         for blender_mat in blender_materials:
             mesh.materials.append(blender_mat)
 
-        scene = bpy.context.scene
-        scene.objects.active = mesh_obj
-        mesh_obj.select = True
+        # scene = bpy.context.scene
+        # scene.objects.active = mesh_obj
+
+        bpy.context.view_layer.update()
+        bpy.context.view_layer.objects.active = mesh_obj
+        bpy.context.view_layer.update()
+        mesh_obj.select_set(True)
 
         # Add uv map if and only if TextCoordTable contains any UVs
         if len(EluNode.TexCoordTable) > 0:
@@ -229,7 +255,8 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
             uv_layer = bm.loops.layers.uv.verify()
             if mesh_has_extra_uv:
                 uv_layer_extra = bm.loops.layers.uv.verify()
-            bm.faces.layers.tex.verify()
+            # bm.faces.layers.tex.verify()
+            # @todo for the line above?
 
             face_index = 0
             for face in bm.faces:
@@ -286,7 +313,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
             scene = bpy.context.scene
             scene.frame_start = 0
             scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
-            scene.objects.active = armature_object
+            set_active_blender_object(armature_object)
 
             animation_basename = os.path.basename(animation)
             action_name = animation_basename.split('.')[0].strip()
@@ -376,15 +403,16 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 if elu_position:
                     position_vector = Vector(elu_position.GetVecDataAsTuple())
                     if pose_bone.parent:
-                        result = pose_bone.parent.matrix * position_vector
+                        result = pose_bone.parent.matrix @ position_vector
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
                         pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
-                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * result
+                        matrix_diff = armature_matrix_inverse @ pbone_matrix_inverted @ result
                         pose_bone.location = matrix_diff
                     else:
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
                         pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
-                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * position_vector
+                        # matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * position_vector
+                        matrix_diff = armature_matrix_inverse @ pbone_matrix_inverted @ position_vector
                         pose_bone.location = matrix_diff
 
                     pose_bone.keyframe_insert(data_path="location",
@@ -400,15 +428,15 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     elu_position = AniNode.PositionKeyTrack.Data[i].Vector
                     position_vector = Vector(elu_position.GetVecDataAsTuple())
                     if pose_bone.parent:
-                        result = pose_bone.parent.matrix * position_vector
+                        result = pose_bone.parent.matrix @ position_vector
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
                         pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
-                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * result
+                        matrix_diff = armature_matrix_inverse @ pbone_matrix_inverted @ result
                         pose_bone.location = matrix_diff
                     else:
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
                         pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
-                        matrix_diff = armature_matrix_inverse * pbone_matrix_inverted * position_vector
+                        matrix_diff = armature_matrix_inverse @ pbone_matrix_inverted @ position_vector
                         pose_bone.location = matrix_diff
 
                     pose_bone.keyframe_insert(data_path="location",
@@ -420,13 +448,13 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 if elu_quat:
                     rot_quat = Quaternion((elu_quat.W, elu_quat.X, elu_quat.Y, elu_quat.Z))
                     if pose_bone.parent:
-                        result_quat = pose_bone.parent.matrix.to_quaternion() * rot_quat
+                        result_quat = pose_bone.parent.matrix.to_quaternion() @ rot_quat
                         pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
-                        diff_quat = pbone_quat_inverted * result_quat
+                        diff_quat = pbone_quat_inverted @ result_quat
                         pose_bone.rotation_quaternion = diff_quat
                     else:
                         pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
-                        diff_quat = pbone_quat_inverted * rot_quat
+                        diff_quat = pbone_quat_inverted @ rot_quat
                         pose_bone.rotation_quaternion = diff_quat
 
                     pose_bone.keyframe_insert(data_path='rotation_quaternion',
@@ -438,13 +466,13 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     elu_quat = AniNode.RotationKeyTrack.Data[i].Quat
                     rot_quat = Quaternion((elu_quat.W, elu_quat.X, elu_quat.Y, elu_quat.Z))
                     if pose_bone.parent:
-                        result_quat = pose_bone.parent.matrix.to_quaternion() * rot_quat
+                        result_quat = pose_bone.parent.matrix.to_quaternion() @ rot_quat
                         pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
-                        diff_quat = pbone_quat_inverted * result_quat
+                        diff_quat = pbone_quat_inverted @ result_quat
                         pose_bone.rotation_quaternion = diff_quat
                     else:
                         pbone_quat_inverted = pose_bone.matrix.to_quaternion().inverted()
-                        diff_quat = pbone_quat_inverted * rot_quat
+                        diff_quat = pbone_quat_inverted @ rot_quat
                         pose_bone.rotation_quaternion = diff_quat
                     pose_bone.keyframe_insert(data_path='rotation_quaternion',
                                             frame=frame,
@@ -499,16 +527,20 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         if int(frame) == 0:
                             if round(vis_key) == 0:
                                 if pose_bone.scale == Vector((1, 1, 1)):
-                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    # pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    pose_bone.scale = Vector((0, 0, 0))
                                     SET_VISKEY = True
                             elif round(vis_key) == 1:
-                                if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
+                                # if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
+                                if pose_bone.scale == Vector((0, 0, 0)):
                                     pose_bone.scale = Vector((1, 1, 1))
                                     SET_VISKEY = True
                         elif int(frame) == ani_mesh_obj.AniHeader.MaxFrame:
                             if round(vis_key) == 0:
-                                if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
-                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                # if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
+                                #    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                if pose_bone.scale == Vector((0, 0, 0)):
+                                    pose_bone.scale = Vector((0, 0, 0))
                                     SET_VISKEY = True
                             elif round(vis_key) == 1:
                                 if pose_bone.scale == Vector((1, 1, 1)):
@@ -522,14 +554,16 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                             if current_frame == previous_frame:
                                 frame += 1
                                 if round(vis_key) == 0:
-                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    # pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    pose_bone.scale = Vector((0, 0, 0))
                                     SET_VISKEY = True
                                 elif round(vis_key) == 1:
                                     pose_bone.scale = Vector((1, 1, 1))
                                     SET_VISKEY = True
                             else:
                                 if round(vis_key) == 0:
-                                    pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    # pose_bone.scale = Vector((0.001, 0.001, 0.001))
+                                    pose_bone.scale = Vector((0, 0, 0))
                                     SET_VISKEY = True
                                 elif round(vis_key) == 1:
                                     pose_bone.scale = Vector((1, 1, 1))
@@ -551,7 +585,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     kf.interpolation = "CONSTANT"
             """     
             # End rotation bug (MBAE-3) fix
-
+            return
             bpy.ops.object.mode_set(mode="OBJECT")
 
             if os.path.exists(raider_file_obj.object_ani_folder):
