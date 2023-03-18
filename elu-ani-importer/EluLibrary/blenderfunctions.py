@@ -87,7 +87,7 @@ def draw_elu_skeleton(elu_mesh_obj):
         return
 
     for EluMeshNode in elu_mesh_obj.EluMeshNodes:
-        EluMeshNode.BlenderLocalMatrix = Matrix(EluMeshNode.LocalMatrix.GetMatrixAsTuples())
+        EluMeshNode.BlenderLocalMatrix = Matrix(EluMeshNode.LocalMatrix.get_matrix_as_tuples())
         EluMeshNode.BlenderLocalMatrix.transpose()
 
         # Default BlenderGlobalMatrix is same BlenderLocalMatrix
@@ -179,7 +179,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
 
         points = []
         for NodePoint in EluNode.PointsTable:
-            point = NodePoint.GetVecDataAsTuple()
+            point = NodePoint.get_vec_data_as_tuple()
             points.append(Vector(point))
 
         bpy.context.view_layer.update()
@@ -278,7 +278,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
                     face_sub_data = polygon.FaceSubDatas[corner_index]
                     uv_index = face_sub_data.uv
                     try:
-                        elu_uv = EluNode.TexCoordTable[uv_index].GetVecDataAsTuple()
+                        elu_uv = EluNode.TexCoordTable[uv_index].get_vec_data_as_tuple()
                     except IndexError:
                         print("Length of TexCoordTable : {0}, uv_index: {1}".format(len(EluNode.TexCoordTable), uv_index))
                         print("Elu Version: {0}".format(elu_mesh_obj.EluHeader.Version))
@@ -288,7 +288,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
 
                     if mesh_has_extra_uv:
                         uv_extra_index = face_sub_data.uv2
-                        elu_uv_extra = EluNode.TexCoordExtraTable[uv_extra_index].GetVecDataAsTuple()
+                        elu_uv_extra = EluNode.TexCoordExtraTable[uv_extra_index].get_vec_data_as_tuple()
                         blender_uv_extra = [elu_uv_extra[0], 1 - elu_uv_extra[1]]
                         loop_uv_extra.uv = blender_uv_extra
                     corner_index += 1
@@ -363,7 +363,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                                 print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
                                 raise Exception
                             elu_position = AniNode.PositionKeyTrack.Data[i].Vector
-                            position_vector = Vector(elu_position.GetVecDataAsTuple())
+                            position_vector = Vector(elu_position.get_vec_data_as_tuple())
 
                             pbone_matrix_inverted = pose_bone.bone.matrix_local.inverted()
                             matrix_diff = default_armature_object_inverted_world_matrix * pbone_matrix_inverted * position_vector
@@ -401,7 +401,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 frame = 0
                 elu_position = AniNode.BaseTranslation
                 if elu_position:
-                    position_vector = Vector(elu_position.GetVecDataAsTuple())
+                    position_vector = Vector(elu_position.get_vec_data_as_tuple())
                     if pose_bone.parent:
                         result = pose_bone.parent.matrix @ position_vector
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
@@ -426,7 +426,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
                         raise Exception
                     elu_position = AniNode.PositionKeyTrack.Data[i].Vector
-                    position_vector = Vector(elu_position.GetVecDataAsTuple())
+                    position_vector = Vector(elu_position.get_vec_data_as_tuple())
                     if pose_bone.parent:
                         result = pose_bone.parent.matrix @ position_vector
                         armature_matrix_inverse = armature_object.matrix_world.inverted()
@@ -490,7 +490,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     frame = AniNode.ScaleKeyTrack.Data[i].Frame / 160
                     elu_scale = AniNode.ScaleKeyTrack.Data[i].Vector
 
-                    scale_vector = Vector(elu_scale.GetVecDataAsTuple())
+                    scale_vector = Vector(elu_scale.get_vec_data_as_tuple())
                     pose_bone.scale = scale_vector
                     pose_bone.keyframe_insert(data_path="scale",
                                             frame=frame,

@@ -15,28 +15,32 @@ import binaryreader
 import globalvars
 import struct
 
+from typing import TypeVar
+
+FVector4Type = TypeVar("FVector4Type", bound="FVector4")
+
 
 class FMatrix:
 
-    def __init__(self, FloatTuple):
-        self._00 = FloatTuple[0]
-        self._01 = FloatTuple[1]
-        self._02 = FloatTuple[2]
-        self._03 = FloatTuple[3]
-        self._10 = FloatTuple[4]
-        self._11 = FloatTuple[5]
-        self._12 = FloatTuple[6]
-        self._13 = FloatTuple[7]
-        self._20 = FloatTuple[8]
-        self._21 = FloatTuple[9]
-        self._22 = FloatTuple[10]
-        self._23 = FloatTuple[11]
-        self._30 = FloatTuple[12]
-        self._31 = FloatTuple[13]
-        self._32 = FloatTuple[14]
-        self._33 = FloatTuple[15]
+    def __init__(self, float_tuple: tuple) -> None:
+        self._00: float = float_tuple[0]
+        self._01: float = float_tuple[1]
+        self._02: float = float_tuple[2]
+        self._03: float = float_tuple[3]
+        self._10: float = float_tuple[4]
+        self._11: float = float_tuple[5]
+        self._12: float = float_tuple[6]
+        self._13: float = float_tuple[7]
+        self._20: float = float_tuple[8]
+        self._21: float = float_tuple[9]
+        self._22: float = float_tuple[10]
+        self._23: float = float_tuple[11]
+        self._30: float = float_tuple[12]
+        self._31: float = float_tuple[13]
+        self._32: float = float_tuple[14]
+        self._33: float = float_tuple[15]
 
-    def GetMatrixAsTuples(self):
+    def get_matrix_as_tuples(self) -> tuple[tuple[float, ...], ...]:
         return ((self._00, self._01, self._02, self._03),
                 (self._10, self._11, self._12, self._13),
                 (self._20, self._21, self._22, self._23),
@@ -45,35 +49,35 @@ class FMatrix:
 
 class FVector:
 
-    def __init__(self, FloatTuple):
-        self.X = FloatTuple[0]
-        self.Y = FloatTuple[1]
-        self.Z = FloatTuple[2]
+    def __init__(self, float_tuple: tuple[float, ...]) -> None:
+        self.X: float = float_tuple[0]
+        self.Y: float = float_tuple[1]
+        self.Z: float = float_tuple[2]
 
-    def GetVecDataAsTuple(self):
-        return (self.X, self.Y, self.Z)
+    def get_vec_data_as_tuple(self) -> tuple[float, ...]:
+        return self.X, self.Y, self.Z
 
 
 class FVector4:
 
-    def __init__(self, FloatTuple):
-        self.X = FloatTuple[0]
-        self.Y = FloatTuple[1]
-        self.Z = FloatTuple[2]
-        self.W = FloatTuple[3]
+    def __init__(self, float_tuple: tuple[float, ...]) -> None:
+        self.X: float = float_tuple[0]
+        self.Y: float = float_tuple[1]
+        self.Z: float = float_tuple[2]
+        self.W: float = float_tuple[3]
 
     @classmethod
-    def FromVec3(cls, Vec3):
-        return FVector4((Vec3.X, Vec3.Y, Vec3.Z, 1))
+    def from_vec3(cls, vec3: FVector) -> FVector4Type:
+        return FVector4((vec3.X, vec3.Y, vec3.Z, 1))
 
 
 class FQuaternion:
 
-    def __init__(self, FloatTuple):
-        self.X = FloatTuple[0]
-        self.Y = FloatTuple[1]
-        self.Z = FloatTuple[2]
-        self.W = FloatTuple[3]
+    def __init__(self, float_tuple: tuple[float, ...]) -> None:
+        self.X: float = float_tuple[0]
+        self.Y: float = float_tuple[1]
+        self.Z: float = float_tuple[2]
+        self.W: float = float_tuple[3]
 
 
 class FBoundingBox:
@@ -82,72 +86,73 @@ class FBoundingBox:
         self.vmin = None
         self.vmax = None
 
-    def Add(self, Point):
+    def add(self, point):
+        # @todo
         pass
 
 
 class FFaceSubData:
 
-    def __init__(self):
-        self.p = 0
-        self.uv = 0
-        self.uv2 = 0
-        self.n = 0
-        self.n_tan = 0
-        self.n_bin = 0
+    def __init__(self) -> None:
+        self.p: int = 0
+        self.uv: int = 0
+        self.uv2: int = 0
+        self.n: int = 0
+        self.n_tan: int = 0
+        self.n_bin: int = 0
 
 
 class FVertexIndex:
 
+    def __init__(self) -> None:
+        self.p: int = 0
+        self.n: int = 0
+        self.uv: int = 0
+        self.uv2: int = 0
+        self.n_tan: int = 0
+        self.n_bin: int = 0
+
+
+class FvertexindexV12:
+
     def __init__(self):
-        self.p = 0
-        self.n = 0
-        self.uv = 0
-        self.uv2 = 0
-        self.n_tan = 0
-        self.n_bin = 0
-
-
-class FVertexIndex_v12:
-
-    def __init__(self):
-        self.p = 0
-        self.n = 0
-        self.uv = 0
-        self.n_tan = 0
-        self.n_bin = 0
+        self.p: int = 0
+        self.n: int = 0
+        self.uv: int = 0
+        self.n_tan: int = 0
+        self.n_bin: int = 0
 
 
 class FMeshPolygonData:
 
     def __init__(self):
-        self.Vertices = 0
-        self.MaterialID = 0
-        self.FaceSubDatas = []
+        self.Vertices: int = 0
+        self.MaterialID: int = 0
+        self.FaceSubDatas: list[FFaceSubData] = []
 
 
 class FPhysiqueSubData:
 
     def __init__(self):
-        self.cid = 0
-        self.pid = 0
-        self.weight = 0
+        self.cid: int = 0
+        self.pid: int = 0
+        self.weight: float = 0.0
 
 
 class FPhysiqueInfo:
 
     def __init__(self):
-        self.Num = 0
-        self.PhysiqueSubDatas = []
+        self.Num: int = 0
+        self.PhysiqueSubDatas: list[FPhysiqueSubData] = []
 
 
 class FMtrlTableInfo:
 
     def __init__(self):
-        self.MaterialID = 0
-        self.Offset = 0
-        self.Count = 0
-        self.SubMaterialIDForDrawMasking = 0
+        self.MaterialID: int = 0
+        self.Offset: int = 0
+        self.Count: int = 0
+        self.SubMaterialIDForDrawMasking: int = 0
 
 
 class RMeshAlign(enum.Enum):
@@ -161,20 +166,20 @@ class FEluNode:
     This class contains all data related to an elu node.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initialize all variables to default values
         """
-        self.BipID = globalvars.INDEX_NONE
+        self.BipID: int = globalvars.INDEX_NONE
 
-        self.NodeName = globalvars.STRING_NONE
-        self.NodeParentName = globalvars.STRING_NONE
-        self.ParentNodeID = globalvars.INDEX_NONE
+        self.NodeName: str = globalvars.STRING_NONE
+        self.NodeParentName: str = globalvars.STRING_NONE
+        self.ParentNodeID: int = globalvars.INDEX_NONE
 
-        self.dwFlag = globalvars.INDEX_NONE
-        self.MeshAlign = RMeshAlign.RMA_NONE
-        self.BaseVisibility = 1.0  # Mesh should be visibile by default
-        self.LODProjectIndex = 0  # LOD Index
+        self.dwFlag: int = globalvars.INDEX_NONE
+        self.MeshAlign: RMeshAlign = RMeshAlign.RMA_NONE
+        self.BaseVisibility: float = 1.0  # Mesh should be visible by default
+        self.LODProjectIndex: int = 0  # LOD Index
 
         self.LocalMatrix = None
         self.BlenderMatrix = None
@@ -228,12 +233,12 @@ class FEluNode:
 
         self.BoundingBox = FBoundingBox()
 
-    def CalculateLocalBoundingBox(self):
+    def calculate_local_bounding_box(self) -> None:
         for i in range(len(self.PointsTable)):
-            self.BoundingBox.Add(self.PointsTable[i])
+            self.BoundingBox.add(self.PointsTable[i])
 
-    def AddFlag(self, Flag):
-        self.dwFlag |= Flag
+    def add_flag(self, flag) -> None:
+        self.dwFlag |= flag
 
 
 class FEluHeader:
@@ -285,10 +290,10 @@ class FAnimationTrack:
 
 class FAnimType:
 
-    def __init__(self, IntTuple):
-        self.Type = IntTuple[0]
-        self.CountType = IntTuple[1]
-        self.Count = IntTuple[2]
+    def __init__(self, int_tuple: tuple[int, ...]):
+        self.Type: int = int_tuple[0]
+        self.CountType: int = int_tuple[1]
+        self.Count: int = int_tuple[2]
 
 
 class EAnimationType(enum.Enum):
@@ -323,23 +328,23 @@ class FAniNode:
         self.BaseScale = None
 
 
-def HalfToFloatI_(Val):
-    s = (Val >> 15) & 0x00000001
-    e = (Val >> 10) & 0x0000001f
-    m = Val & 0x000003ff
+def half_to_float_i_(val):
+    s = (val >> 15) & 0x00000001
+    e = (val >> 10) & 0x0000001f
+    m = val & 0x000003ff
 
-    if (e == 0):
-        if (m == 0):
+    if e == 0:
+        if m == 0:
             return s << 31
         else:
-            while (not (m & 0x00000400)):
+            while not (m & 0x00000400):
                 m <<= 1
                 e -= 1
             e += 1
             m &= ~0x00000400
 
-    elif (e == 31):
-        if (m == 0):
+    elif e == 31:
+        if m == 0:
             return s << 31 | 0x7f800000
         else:
             return s << 31 | 0x7f800000 | (m << 13)
@@ -350,15 +355,15 @@ def HalfToFloatI_(Val):
     return (s << 31) | (e << 23) | m
 
 
-def HalfToFloat(Val):
-    UIntVal = HalfToFloatI_(Val)
-    data = struct.pack('<I', UIntVal)
-    FloatVal = struct.unpack('<f', data)[0]
-    return FloatVal
+def half_to_float(val: int) -> float:
+    u_int_val = half_to_float_i_(val)
+    data = struct.pack('<I', u_int_val)
+    float_val = struct.unpack('<f', data)[0]
+    return float_val
 
 
-def ConvertShortToFloat(ShortTuple):
-    X = HalfToFloat(ShortTuple[0])
-    Y = HalfToFloat(ShortTuple[1])
-    Z = HalfToFloat(ShortTuple[2])
-    return (X, Y, Z)
+def convert_short_to_float(short_tuple) -> tuple[float, ...]:
+    x = half_to_float(short_tuple[0])
+    y = half_to_float(short_tuple[1])
+    z = half_to_float(short_tuple[2])
+    return x, y, z

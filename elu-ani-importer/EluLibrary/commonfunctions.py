@@ -12,81 +12,78 @@ import datetime
 import os
 import glob
 
+from typing import Union
 
-def GetCurrentTimeAsString():
+
+def get_current_time_as_string() -> str:
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def IsValidFilePath(FilePath):
-    """
-    @todo - function not implemented yet
-    Returns true if FilePath is a valid-
-    """
-    # @todo Finish code
-    return None
+def is_valid_file_path(file_path: str) -> bool:
+    return os.path.exists(file_path) and os.path.isfile(file_path)
 
 
-def ListSubdirs(DirPath):
+def list_sub_dirs(dir_path: str) -> list[str]:
     """
     Returns a list of all subdirectories recursively in the given DirPath
     """
-    DirContent = os.listdir(DirPath)
+    dir_content = os.listdir(dir_path)
 
     # If there is no content (files or folders) inside DirPath, return empty list
-    if not DirContent:
+    if not dir_content:
         return []
-    
-    # Sub directories in current DirPath
-    SubDirs = [os.path.join(DirPath, sd) for sd in os.listdir(DirPath) if
-               os.path.isdir(os.path.join(DirPath, sd))]
+
+    # Subdirectories in current DirPath
+    sub_dirs = [os.path.join(dir_path, sd) for sd in os.listdir(dir_path) if
+                os.path.isdir(os.path.join(dir_path, sd))]
 
     # Directories inside subdirectory's subdirectory
-    SubDirs_SD = []
-    for SubDir in SubDirs:
-        SubDirs_SD += ListSubdirs(SubDir)
-    
-    SubDirs += SubDirs_SD
-    return SubDirs
+    sub_dirs_sd = []
+    for SubDir in sub_dirs:
+        sub_dirs_sd += list_sub_dirs(SubDir)
+
+    sub_dirs += sub_dirs_sd
+    return sub_dirs
 
 
-def FindFiles(DirPath, FileExtension=""):
+def find_files(dir_path: str, file_extension: str = "") -> list[str]:
     """
     Returns the list of all files inside the given directory (DirPath) and all
-    of it's sub-directories. If FileExtension is provided then only files 
+    of its subdirectories. If FileExtension is provided then only files
     with the given FileExtension are returned.\n
     File extension should be provided as .ext, not ext
     """
-    FilesList = []
-    FilesList += glob.glob(DirPath + '\\*' + FileExtension)
+    files_list = []
+    files_list += glob.glob(dir_path + '\\*' + file_extension)
 
-    SubDirs = ListSubdirs(DirPath)
-    for SubDir in SubDirs:
-        FilesList += glob.glob(SubDir + '\\*' + FileExtension)
-    
-    return FilesList
+    sub_dirs = list_sub_dirs(dir_path)
+    for SubDir in sub_dirs:
+        files_list += glob.glob(SubDir + '\\*' + file_extension)
+
+    return files_list
 
 
-def GetFileExtension(FilePath):
+def get_file_extension(file_path: str) -> Union[str, None]:
     """
     Returns file extension in .ext format, instead of ext.
     Returns None if FilePath is not a valid FilePath
     """
-    if os.path.isfile(FilePath):
-        FileName = os.path.basename(FilePath)
-        Extension = FileName.split('.')[-1]
-        Extension = '.' + Extension
-        return Extension
+    if os.path.isfile(file_path):
+        file_name = os.path.basename(file_path)
+        extension = file_name.split('.')[-1]
+        extension = '.' + extension
+        return extension
     else:
         return None
 
 
-def GetFileName(FilePath):
+def get_file_name(file_path: str) -> Union[str, None]:
     """
     Returns file name from FilePath
     Returns None if FilePath is not a valid FilePath
     """
-    if os.path.isfile(FilePath):
-        FileName = os.path.basename(FilePath)
-        return FileName
+    if os.path.isfile(file_path):
+        file_name = os.path.basename(file_path)
+        return file_name
     else:
         return None

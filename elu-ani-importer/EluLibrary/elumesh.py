@@ -25,60 +25,60 @@ class FEluMesh:
     Contains all the data read from a single Elu file
     """
 
-    def __init__(self, FilePath):
+    def __init__(self, file_path: str) -> None:
         self.EluHeader = FEluHeader()
         self.EluMeshNodes = []
-        self.FilePath = FilePath
-        self.SourceDir = os.path.dirname(FilePath)
-        self.SourceFile = os.path.basename(FilePath)
+        self.FilePath = file_path
+        self.SourceDir = os.path.dirname(file_path)
+        self.SourceFile = os.path.basename(file_path)
         try:
-            commonfunctions.GetFileExtension(self.FilePath) == '.elu'\
-            "Assertion Failed: File extension is not .elu, FilePath: {0}".format(FilePath)
+            commonfunctions.get_file_extension(self.FilePath) == '.elu' \
+                                                                 "Assertion Failed: File extension is not .elu, " \
+                                                                 "FilePath: {0}".format(
+                file_path)
         except AssertionError as err:
-            errorhandling.HandleAssertionError(err)
-        self.EluFileStream = open(FilePath, 'rb')
-        self.LoadAndParseEluFile()
+            errorhandling.handle_assertion_error(err)
+        self.EluFileStream = open(file_path, 'rb')
+        self._load_and_parse_elu_file()
 
-
-    def LoadAndParseEluFile(self):
-        self.EluHeader.Signature =  binaryreader.ReadUInt(self.EluFileStream, 1)[0]
-        self.EluHeader.Version = binaryreader.ReadUInt(self.EluFileStream, 1)[0]
-        self.EluHeader.MaterialNum = binaryreader.ReadInt(self.EluFileStream, 1)[0]
-        self.EluHeader.MeshNum = binaryreader.ReadInt(self.EluFileStream, 1)[0]
+    def _load_and_parse_elu_file(self):
+        self.EluHeader.Signature = binaryreader.read_unsigned_int(self.EluFileStream, 1)[0]
+        self.EluHeader.Version = binaryreader.read_unsigned_int(self.EluFileStream, 1)[0]
+        self.EluHeader.MaterialNum = binaryreader.read_int(self.EluFileStream, 1)[0]
+        self.EluHeader.MeshNum = binaryreader.read_int(self.EluFileStream, 1)[0]
         globalvars.CurrentEluFileVersion = self.EluHeader.Version
 
         if self.EluHeader.Signature != raidflags.EXPORTER_SIG:
             # @todo add signature error
             pass
-        
+
         if self.EluHeader.Version != raidflags.EXPORTER_CURRENT_MESH_VER:
             # @todo add warning -  elu not latest version
             pass
-        
-        LoaderObj = None
+
+        loader_obj = None
         if globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER20:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v20()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v20()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER18:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v18()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v18()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER17:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v17()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v17()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER16:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v16()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v16()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER15:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v15()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v15()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER14:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v14()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v14()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER13:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v13()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v13()
         elif globalvars.CurrentEluFileVersion == raidflags.EXPORTER_MESH_VER12:
-            LoaderObj = eluparser.FEluNodeLoaderImpl_v12()
+            loader_obj = eluparser.FEluNodeLoaderImpl_v12()
         else:
             # @todo elu version error
             pass
-                    
+
         for i in range(self.EluHeader.MeshNum):
-            EluNode = FEluNode()
-            LoaderObj.Load(EluNode, self.EluFileStream)
-            self.EluMeshNodes.append(EluNode)
+            elu_node = FEluNode()
+            loader_obj.Load(elu_node, self.EluFileStream)
+            self.EluMeshNodes.append(elu_node)
         return
-            

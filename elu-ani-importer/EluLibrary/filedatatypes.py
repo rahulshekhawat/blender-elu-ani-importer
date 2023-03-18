@@ -16,49 +16,49 @@ import xml.etree.ElementTree as ETree
 
 class FRaiderFilesManager:
 
-    def __init__(self, SourceDir=None, DestinationDir=None):
-        if SourceDir is None:
+    def __init__(self, source_dir: str = None, destination_dir: str = None) -> None:
+        if source_dir is None:
             self.SourceDir = r'F:\Game Dev\asset_src'
         else:
-            self.SourceDir = SourceDir
-        if DestinationDir is None:
+            self.SourceDir = source_dir
+        if destination_dir is None:
             self.DestinationDir = r'F:\Game Dev\asset_dest'
         else:
-            self.DestinationDir = DestinationDir
+            self.DestinationDir = destination_dir
 
         # Source directories
-        self.MonstersDirPath = self.SourceDir + r'\Model\Monster'
-        self.StaticsDirPath = self.SourceDir + r'\Model\MapObject'
-        self.FemaleDirPath = self.SourceDir + r'\Model\Player\hf'
-        self.MaleDirPath = self.SourceDir + r'\Model\Player\hm'
-        self.RidesDirPath = self.SourceDir + r'\Model\Ride'
-        self.SkiesDirPath = self.SourceDir + r'\Model\Sky'
-        self.WeaponsDirPath = self.SourceDir + r'\Model\weapons'
-        self.NPCDirPath = self.SourceDir + r'\Model\NPC'
-        self.SFXDirPath = self.SourceDir + r'\SFX'
+        self.MonstersDirPath: str = self.SourceDir + r'\Model\Monster'
+        self.StaticsDirPath: str = self.SourceDir + r'\Model\MapObject'
+        self.FemaleDirPath: str = self.SourceDir + r'\Model\Player\hf'
+        self.MaleDirPath: str = self.SourceDir + r'\Model\Player\hm'
+        self.RidesDirPath: str = self.SourceDir + r'\Model\Ride'
+        self.SkiesDirPath: str = self.SourceDir + r'\Model\Sky'
+        self.WeaponsDirPath: str = self.SourceDir + r'\Model\weapons'
+        self.NPCDirPath: str = self.SourceDir + r'\Model\NPC'
+        self.SFXDirPath: str = self.SourceDir + r'\SFX'
 
-        self.monsters_eluxml_files = []
-        self.mapobject_eluxml_files = []
-        self.female_eluxml_files = []
-        self.male_eluxml_files = []
-        self.rides_eluxml_files = []
-        self.skies_eluxml_files = []
-        self.weapons_eluxml_files = []
-        self.npc_eluxml_files = []
-        self.sfx_eluxml_files = []
+        self.monsters_eluxml_files: list[str] = []
+        self.mapobject_eluxml_files: list[str] = []
+        self.female_eluxml_files: list[str] = []
+        self.male_eluxml_files: list[str] = []
+        self.rides_eluxml_files: list[str] = []
+        self.skies_eluxml_files: list[str] = []
+        self.weapons_eluxml_files: list[str] = []
+        self.npc_eluxml_files: list[str] = []
+        self.sfx_eluxml_files: list[str] = []
 
         self.FillEluXmlFilesList()
 
     def FillEluXmlFilesList(self):
-        self.monsters_eluxml_files = commonfunctions.FindFiles(self.MonstersDirPath, '.elu.xml')
-        self.mapobject_eluxml_files = commonfunctions.FindFiles(self.StaticsDirPath, '.elu.xml')
-        self.female_eluxml_files = commonfunctions.FindFiles(self.FemaleDirPath, '.elu.xml')
-        self.male_eluxml_files = commonfunctions.FindFiles(self.MaleDirPath, '.elu.xml')
-        self.rides_eluxml_files = commonfunctions.FindFiles(self.RidesDirPath, '.elu.xml')
-        self.skies_eluxml_files = commonfunctions.FindFiles(self.SkiesDirPath, '.elu.xml')
-        self.weapons_eluxml_files = commonfunctions.FindFiles(self.WeaponsDirPath, '.elu.xml')
-        self.npc_eluxml_files = commonfunctions.FindFiles(self.NPCDirPath, '.elu.xml')
-        self.sfx_eluxml_files = commonfunctions.FindFiles(self.SFXDirPath, '.elu.xml')
+        self.monsters_eluxml_files = commonfunctions.find_files(self.MonstersDirPath, '.elu.xml')
+        self.mapobject_eluxml_files = commonfunctions.find_files(self.StaticsDirPath, '.elu.xml')
+        self.female_eluxml_files = commonfunctions.find_files(self.FemaleDirPath, '.elu.xml')
+        self.male_eluxml_files = commonfunctions.find_files(self.MaleDirPath, '.elu.xml')
+        self.rides_eluxml_files = commonfunctions.find_files(self.RidesDirPath, '.elu.xml')
+        self.skies_eluxml_files = commonfunctions.find_files(self.SkiesDirPath, '.elu.xml')
+        self.weapons_eluxml_files = commonfunctions.find_files(self.WeaponsDirPath, '.elu.xml')
+        self.npc_eluxml_files = commonfunctions.find_files(self.NPCDirPath, '.elu.xml')
+        self.sfx_eluxml_files = commonfunctions.find_files(self.SFXDirPath, '.elu.xml')
 
     def RaiderFileObjectGenerator(self, eluxml_files):
         for eluxml_file in eluxml_files:
@@ -66,7 +66,7 @@ class FRaiderFilesManager:
             if raider_file_object is None:
                 base_eluxml_name = os.path.basename(eluxml_file)
                 message = "Couldn't find appropriate model and animation files related to - {0}".format(base_eluxml_name)
-                filelogger.AddLog(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Error)
+                filelogger.add_log(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Error)
                 continue
             else:
                 yield raider_file_object
@@ -128,7 +128,7 @@ class FRaiderFilesManager:
         except Exception:
             base_animation_xml_name = os.path.basename(animation_xml_file)
             message = "Couldn't parse {0}".format(base_animation_xml_name)
-            filelogger.AddLog(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Warning)
+            filelogger.add_log(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Warning)
             return animation_filenames
 
         xml_root = xml_tree.getroot()
@@ -148,7 +148,7 @@ class FRaiderFilesManager:
         except Exception:
             base_eluxml_name = os.path.basename(eluxml_file)
             message = "Couldn't parse {0}".format(base_eluxml_name)
-            filelogger.AddLog(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Warning)
+            filelogger.add_log(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Warning)
             return materials_list
 
         xml_root = xml_tree.getroot()
@@ -166,7 +166,7 @@ class FRaiderFilesManager:
 
 class FRaiderFileObject:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.elu_file = None
         self.elu_xml_file = None
         self.animation_xml_file = None
@@ -182,7 +182,7 @@ class FRaiderFileObject:
         self.ani_filenames = set()
         self.materials_list = []
 
-    def has_animations(self):
+    def has_animations(self) -> bool:
         if len(self.ani_filenames) > 0:
             return True
         else:

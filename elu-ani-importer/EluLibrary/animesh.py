@@ -30,20 +30,20 @@ class FAniMesh:
         self.SourceDir = os.path.dirname(FilePath)
         self.SourceFile = os.path.basename(FilePath)
         try:
-            assert commonfunctions.GetFileExtension(self.FilePath) == '.ani', \
+            assert commonfunctions.get_file_extension(self.FilePath) == '.ani', \
             "Assertion Failed: File extension is not .ani, FilePath: {0}".format(FilePath)
         except AssertionError as err:
-            errorhandling.HandleAssertionError(err)
+            errorhandling.handle_assertion_error(err)
         self.AniFileStream = open(FilePath, 'rb')
         self.LoadAndParseAniFile()
 
     def LoadAndParseAniFile(self):
-        self.AniHeader.Signature = binaryreader.ReadUInt(self.AniFileStream, 1)[0]
-        self.AniHeader.Version = binaryreader.ReadUInt(self.AniFileStream, 1)[0]
-        self.AniHeader.MaxFrame = binaryreader.ReadInt(self.AniFileStream, 1)[0]
-        self.AniHeader.ModelNum = binaryreader.ReadInt(self.AniFileStream, 1)[0]
-        # self.AniHeader.AniType = binaryreader.ReadInt(self.AniFileStream, 1)[0]
-        self.AniHeader.AniType = EAnimationType(binaryreader.ReadInt(self.AniFileStream, 1)[0])
+        self.AniHeader.Signature = binaryreader.read_unsigned_int(self.AniFileStream, 1)[0]
+        self.AniHeader.Version = binaryreader.read_unsigned_int(self.AniFileStream, 1)[0]
+        self.AniHeader.MaxFrame = binaryreader.read_int(self.AniFileStream, 1)[0]
+        self.AniHeader.ModelNum = binaryreader.read_int(self.AniFileStream, 1)[0]
+        # self.AniHeader.AniType = binaryreader.read_int(self.AniFileStream, 1)[0]
+        self.AniHeader.AniType = EAnimationType(binaryreader.read_int(self.AniFileStream, 1)[0])
 
         print("Ani Version: {0}, ani maxframe: {1}, ani anitype: {2}".format(self.AniHeader.Version, self.AniHeader.MaxFrame, self.AniHeader.AniType))
 

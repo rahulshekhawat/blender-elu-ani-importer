@@ -11,12 +11,12 @@ This module contains global variables that will be used all across the project
 import os
 import commonfunctions
 
-INDEX_NONE = -1
-STRING_NONE = ""
+INDEX_NONE: int = -1
+STRING_NONE: str = ""
 
-RAIDERZ_ASSETS_DIR = r'F:\Game Dev\asset_src'
+RAIDERZ_ASSETS_DIR: str = r'F:\Game Dev\asset_src'
 
-LogFileName = commonfunctions.GetCurrentTimeAsString()
+LogFileName = commonfunctions.get_current_time_as_string()
 # Replace all spaces and semicolons in FileName with hyphen
 LogFileName = LogFileName.replace(' ', '-')
 LogFileName = LogFileName.replace(':', '-')

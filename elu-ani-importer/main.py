@@ -96,7 +96,7 @@ def get_record_file():
 def main(in_record_file):
     record_file_list = record_file.read().split('\n')
     raiderz_files_manager = filedatatypes.FRaiderFilesManager(SourceDir, DestinationDir)
-    animation_files_paths = commonfunctions.FindFiles(raiderz_files_manager.SourceDir, ".ani")
+    animation_files_paths = commonfunctions.find_files(raiderz_files_manager.SourceDir, ".ani")
 
     # if EXPORT_TYPE == EExportType.MassExport:
 

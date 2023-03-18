@@ -11,7 +11,7 @@ This module contains functionality to add and save logs to files
 import os
 import shutil
 import enum
-from commonfunctions import GetCurrentTimeAsString
+from commonfunctions import get_current_time_as_string
 
 
 class LogStreamEndReason(enum.Enum):
@@ -44,48 +44,49 @@ class ELogMessageType(enum.Enum):
     Log_NoFormat = 6
 
 
-def AddLog(LogStream, Message, LogMessageType=ELogMessageType.Log_General):
-    MessagePrefix = ""
-    DateString = "[" + GetCurrentTimeAsString() + "] "
-    MessagePostfix = ""
+def add_log(log_stream, message: str, log_message_type: ELogMessageType = ELogMessageType.Log_General):
+    message_prefix = ""
+    date_string = "[" + get_current_time_as_string() + "] "
+    message_postfix = ""
 
-    if LogMessageType != ELogMessageType.Log_NoFormat:
-        Message = Message.strip()
+    if log_message_type != ELogMessageType.Log_NoFormat:
+        message = message.strip()
 
-    if LogMessageType == ELogMessageType.Log_PrimaryHeader or LogMessageType == ELogMessageType.Log_NoFormat:
-        DateString = ""
+    if log_message_type == ELogMessageType.Log_PrimaryHeader or log_message_type == ELogMessageType.Log_NoFormat:
+        date_string = ""
 
-    if LogMessageType == ELogMessageType.Log_PrimaryHeader:
-        MessagePrefix = "# "
-        MessagePostfix = "  \n\n"
-    elif LogMessageType == ELogMessageType.Log_SecondaryHeader:
-        Message = "**" + Message + "**"
-        MessagePrefix = "\n## "
-        MessagePostfix = "  \n"
-    elif LogMessageType == ELogMessageType.Log_General:
-        MessagePostfix = "  \n"
-    elif LogMessageType == ELogMessageType.Log_Warning:
-        Message = "*" + Message + "*"
-        MessagePrefix = "> "
-        MessagePostfix = "  \n"
-    elif LogMessageType == ELogMessageType.Log_Error:
-        Message = "**" + Message + "**"
-        MessagePrefix = "> "
-        MessagePostfix = "  \n"
-    elif LogMessageType == ELogMessageType.Log_Event:
-        MessagePrefix = "* "
-        MessagePostfix = "  \n"
-    
-    Message = MessagePrefix + DateString + Message + MessagePostfix
+    if log_message_type == ELogMessageType.Log_PrimaryHeader:
+        message_prefix = "# "
+        message_postfix = "  \n\n"
+    elif log_message_type == ELogMessageType.Log_SecondaryHeader:
+        message = "**" + message + "**"
+        message_prefix = "\n## "
+        message_postfix = "  \n"
+    elif log_message_type == ELogMessageType.Log_General:
+        message_postfix = "  \n"
+    elif log_message_type == ELogMessageType.Log_Warning:
+        message = "*" + message + "*"
+        message_prefix = "> "
+        message_postfix = "  \n"
+    elif log_message_type == ELogMessageType.Log_Error:
+        message = "**" + message + "**"
+        message_prefix = "> "
+        message_postfix = "  \n"
+    elif log_message_type == ELogMessageType.Log_Event:
+        message_prefix = "* "
+        message_postfix = "  \n"
+
+    message = message_prefix + date_string + message + message_postfix
     try:
-        LogStream.write(Message)
-        LogStream.flush()
+        log_stream.write(message)
+        log_stream.flush()
         return True
     except:
+        # @todo remove bare 'except'
         return False
 
 
-def CloseLogFileStream(LogStream, Reason=LogStreamEndReason):
+def close_log_file_stream(log_stream, reason=LogStreamEndReason):
     """
     Adds a final log message to logstream and closes it.
     """
@@ -93,60 +94,61 @@ def CloseLogFileStream(LogStream, Reason=LogStreamEndReason):
     If log stream is being closed because of a logging error, for example if the
     logstream is not open.
     """
-    if Reason == LogStreamEndReason.LogError:
+    if reason == LogStreamEndReason.LogError:
         # We don't want the program to crash even if LogStream.close() throws an exception.
         # Because we are already aware that LogStream is being closed due to a LogError
         try:
-            LogStream.close()
+            log_stream.close()
         except Exception as Ex:
             print(Ex)
             pass
         return
 
-    Message = ""
-    if Reason == LogStreamEndReason.LogFinished:
-        Message = "\n\nData logger completed logging task successfully. Log stream closed.\n\n"
-    elif Reason == LogStreamEndReason.ProgramError:
-        Message = "\n\nAn error was encountered amid logging task. Log stream closed.\n\n"
+    message = ""
+    if reason == LogStreamEndReason.LogFinished:
+        message = "\n\nData logger completed logging task successfully. Log stream closed.\n\n"
+    elif reason == LogStreamEndReason.ProgramError:
+        message = "\n\nAn error was encountered amid logging task. Log stream closed.\n\n"
 
-    AddLog(LogStream, Message, ELogMessageType.Log_NoFormat)
+    add_log(log_stream, message, ELogMessageType.Log_NoFormat)
 
     # We want the program to crash if LogStream.close() throws an exception here. 
-    LogStream.close()
+    log_stream.close()
     return
 
 
-def AddLog_Deprecated(FileStream, Message, Logtype=LogType.LogType_General):
+def add_log_deprecated(file_stream, message, log_type=LogType.LogType_General):
     """
     Returns true if message was added successfully to LogFile
     """
     # Add time stamp to message
-    
-    if Logtype == LogType.LogType_None:
+
+    if log_type == LogType.LogType_None:
         pass
-    elif Logtype == LogType.LogType_General:
-        Message = "general - " + Message
-    elif Logtype == LogType.LogType_Warning:
-        Message = "warning - " + Message
-    elif Logtype == LogType.LogType_Error:
-        Message = "error - " + Message
+    elif log_type == LogType.LogType_General:
+        message = "general - " + message
+    elif log_type == LogType.LogType_Warning:
+        message = "warning - " + message
+    elif log_type == LogType.LogType_Error:
+        message = "error - " + message
     else:
         pass
 
-    if Logtype != LogType.LogType_Meta:
-        Message = '[' + GetCurrentTimeAsString() + ']: ' + Message + '\n'
+    if log_type != LogType.LogType_Meta:
+        message = '[' + get_current_time_as_string() + ']: ' + message + '\n'
     else:
         pass
 
     try:
-        FileStream.write(Message)
-        FileStream.flush()
+        file_stream.write(message)
+        file_stream.flush()
         return True
     except:
+        # @todo remove bare 'except'
         return False
 
 
-def CloseLogFileStream_Deprecated(LogStream, Reason=LogStreamEndReason.LogFinished):
+def close_log_file_stream_deprecated(log_stream, reason=LogStreamEndReason.LogFinished) -> None:
     """
     Adds a final log message to logstream and closes it.
     """
@@ -154,23 +156,23 @@ def CloseLogFileStream_Deprecated(LogStream, Reason=LogStreamEndReason.LogFinish
     If log stream is being closed because of a logging error, for example if the
     logstream is not open.
     """
-    if Reason == LogStreamEndReason.LogError:
+    if reason == LogStreamEndReason.LogError:
         # We don't want the program to crash even if LogStream.close() throws an exception.
         # Because we are already aware that LogStream is being closed due to a LogError
         try:
-            LogStream.close()
+            log_stream.close()
         except Exception as Ex:
             print(Ex)
             pass
         return
 
-    if Reason == LogStreamEndReason.LogFinished:
-        Message = "Data logger completed logging task successfully. Log stream closed.\n\n\n"
-    elif Reason == LogStreamEndReason.ProgramError:
-        Message = "An error was encountered amid logging task. Log stream closed.\n\n\n"
+    if reason == LogStreamEndReason.LogFinished:
+        message = "Data logger completed logging task successfully. Log stream closed.\n\n\n"
+    elif reason == LogStreamEndReason.ProgramError:
+        message = "An error was encountered amid logging task. Log stream closed.\n\n\n"
 
-    AddLog(LogStream, Message)
+    add_log(log_stream, message)
 
     # We want the program to crash if LogStream.close() throws an exception here. 
-    LogStream.close()
+    log_stream.close()
     return

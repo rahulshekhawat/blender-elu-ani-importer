@@ -56,77 +56,77 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
     
     def LoadName(self, Node, FileStream, Offset):
         try:
-            Node.NodeName = binaryreader.ReadWord(FileStream)
-            Node.NodeParentName = binaryreader.ReadWord(FileStream)
-            Node.ParentNodeID = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NodeName = binaryreader.read_word(FileStream)
+            Node.NodeParentName = binaryreader.read_word(FileStream)
+            Node.ParentNodeID = binaryreader.read_int(FileStream, 1)[0]
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadInfo(self, Node, FileStream, Offset):
         try:
-            Node.dwFlag = binaryreader.ReadUInt(FileStream, 1)[0]
+            Node.dwFlag = binaryreader.read_unsigned_int(FileStream, 1)[0]
             try:
-                Node.MeshAlign = datatypes.RMeshAlign(binaryreader.ReadInt(FileStream, 1)[0])
+                Node.MeshAlign = datatypes.RMeshAlign(binaryreader.read_int(FileStream, 1)[0])
             except ValueError as er:
                 Message = "Node.MeshAlign value is out of allowed range."
-                filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
+                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
             
             if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER11:
                 # Unused data
-                AniPartsType = binaryreader.ReadInt(FileStream, 1)[0]
-                PartsPosInfoType = binaryreader.ReadInt(FileStream, 1)[0]
-                PartsType = binaryreader.ReadInt(FileStream, 1)[0]
+                AniPartsType = binaryreader.read_int(FileStream, 1)[0]
+                PartsPosInfoType = binaryreader.read_int(FileStream, 1)[0]
+                PartsType = binaryreader.read_int(FileStream, 1)[0]
             
-            Node.LocalMatrix = datatypes.FMatrix(binaryreader.ReadFloat(FileStream, 16))
+            Node.LocalMatrix = datatypes.FMatrix(binaryreader.read_float(FileStream, 16))
             if globalvars.CurrentEluFileVersion >= raidflags.EXPORTER_MESH_VER11:
-                Node.BaseVisibility = binaryreader.ReadInt(FileStream, 1)[0]
+                Node.BaseVisibility = binaryreader.read_int(FileStream, 1)[0]
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
             
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-                Vec4 = datatypes.FVector4.FromVec3(Vec)
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+                Vec4 = datatypes.FVector4.from_vec3(Vec)
                 Node.TangentTanTable.append(Vec4)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadFace(self, Node, FileStream, Offset):
         try:
-            Node.FaceCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.FaceCount = binaryreader.read_int(FileStream, 1)[0]
             if(Node.FaceCount):
                 if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER12:
                     for i in range(Node.FaceCount):
                         MeshPolygonData = datatypes.FMeshPolygonData()
                         MeshPolygonData.Vertices = 3
                         for j in range(j):
-                            UnsignedShorts = binaryreader.ReadUShort(FileStream, 5)
+                            UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 5)
                             FaceSubData = datatypes.FFaceSubData()
                             FaceSubData.p = UnsignedShorts[0]
                             FaceSubData.uv = UnsignedShorts[1]
@@ -135,18 +135,18 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                             FaceSubData.n_tan = UnsignedShorts[3]
                             FaceSubData.n_bin = UnsignedShorts[4]
                             MeshPolygonData.FaceSubDatas.append(FaceSubData)
-                        MeshPolygonData.MaterialID = binaryreader.ReadShort(FileStream, 1)[0]
+                        MeshPolygonData.MaterialID = binaryreader.read_short(FileStream, 1)[0]
                         Node.PolygonTable.append(MeshPolygonData)
                     Node.TotalDegrees = Node.FaceCount * 3
                     Node.TotalTriangles = Node.FaceCount
                 else:
-                    Node.TotalDegrees = binaryreader.ReadInt(FileStream, 1)[0]
-                    Node.TotalTriangles = binaryreader.ReadInt(FileStream, 1)[0]
+                    Node.TotalDegrees = binaryreader.read_int(FileStream, 1)[0]
+                    Node.TotalTriangles = binaryreader.read_int(FileStream, 1)[0]
                     for i in range(Node.FaceCount):
                         MeshPolygonData = datatypes.FMeshPolygonData()
-                        MeshPolygonData.Vertices = binaryreader.ReadInt(FileStream, 1)[0]
+                        MeshPolygonData.Vertices = binaryreader.read_int(FileStream, 1)[0]
                         for j in range(MeshPolygonData.Vertices):
-                            UnsignedShorts = binaryreader.ReadUShort(FileStream, 5)
+                            UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 5)
                             FaceSubData = datatypes.FFaceSubData()
                             FaceSubData.p = UnsignedShorts[0]
                             FaceSubData.uv = UnsignedShorts[1]
@@ -155,44 +155,44 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                             FaceSubData.n_tan = UnsignedShorts[3]
                             FaceSubData.n_bin = UnsignedShorts[4]
                             MeshPolygonData.FaceSubDatas.append(FaceSubData)
-                        MeshPolygonData.MaterialID = binaryreader.ReadShort(FileStream, 1)[0]
+                        MeshPolygonData.MaterialID = binaryreader.read_short(FileStream, 1)[0]
                         Node.PolygonTable.append(MeshPolygonData)
                     try:
                         assert Node.TotalDegrees == sum(len(MeshPolygonData.FaceSubDatas) \
                         for MeshPolygonData in Node.PolygonTable), \
                         "Assertion Failed: TotalDegrees value does not match expected value for node - {}".format(Node.NodeName)
                     except AssertionError as err:
-                        errorhandling.HandleAssertionError(err)
+                        errorhandling.handle_assertion_error(err)
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadVertexInfo(self, Node, FileStream, Offset):
         try:
-            Node.PointColorCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointColorCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointColorCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointColorTable.append(Vec)
             
             if Node.PointsCount == 0 or Node.FaceCount == 0:
-                Node.AddFlag(raidflags.RM_FLAG_DUMMY_MESH)
+                Node.add_flag(raidflags.RM_FLAG_DUMMY_MESH)
             
-            Node.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-            Node.PhysiqueCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+            Node.PhysiqueCount = binaryreader.read_int(FileStream, 1)[0]
 
             if Node.PhysiqueCount:
                 try:
                     assert Node.PointsCount == Node.PhysiqueCount, \
                     "Assertion Failed: Points Count is not same as Physique Count - {0}".format(Node.NodeName)
                 except AssertionError as err:
-                    errorhandling.HandleAssertionError(err)
+                    errorhandling.handle_assertion_error(err)
                 for i in range(Node.PhysiqueCount):
-                    Size = binaryreader.ReadInt(FileStream, 1)[0]
+                    Size = binaryreader.read_int(FileStream, 1)[0]
                     PhysiqueInfo = datatypes.FPhysiqueInfo()
                     for j in range (Size):
                         PhysiqueSubData = datatypes.FPhysiqueSubData()
-                        PhysiqueSubData.cid = binaryreader.ReadUShort(FileStream, 1)[0]
-                        PhysiqueSubData.pid = binaryreader.ReadUShort(FileStream, 1)[0]
-                        PhysiqueSubData.weight = binaryreader.ReadFloat(FileStream, 1)[0]
+                        PhysiqueSubData.cid = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                        PhysiqueSubData.pid = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                        PhysiqueSubData.weight = binaryreader.read_float(FileStream, 1)[0]
                         PhysiqueInfo.PhysiqueSubDatas.append(PhysiqueSubData)
                     PhysiqueInfo.Num = len(PhysiqueInfo.PhysiqueSubDatas)
                     Node.PhysiqueTable.append(PhysiqueInfo)
@@ -213,23 +213,23 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                         PhysiqueInfo.Num = 3
                     
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
     
     def LoadEtc(self, Node, FileStream, Offset):
         try:
-            Node.BoneCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.BoneCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.BoneCount):
-                Matrix = datatypes.FMatrix(binaryreader.ReadFloat(FileStream, 16))
+                Matrix = datatypes.FMatrix(binaryreader.read_float(FileStream, 16))
                 Node.BoneTable.append(Matrix)
             
             for i in range(Node.BoneCount):
-                BoneIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                BoneIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                 Node.BoneTableIndices.append(BoneIndex)
             
-            Node.VertexIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.VertexIndexCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.VertexIndexCount):
                 VertexIndex = datatypes.FVertexIndex()
-                UnsignedShorts = binaryreader.ReadUShort(FileStream, 5)
+                UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 5)
                 VertexIndex.p = UnsignedShorts[0]
                 VertexIndex.n = UnsignedShorts[1]
                 VertexIndex.uv = UnsignedShorts[2]
@@ -240,35 +240,35 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
             if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER12:
                 for i in range(Node.FaceCount):
                     for j in range(3):
-                        FaceIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                        FaceIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                         Node.FaceIndexTable.append(FaceIndex)  
                 Node.FaceIndexCount = Node.FaceCount * 3                  
             else:
-                PrimitiveType = binaryreader.ReadInt(FileStream, 1)[0]
-                Node.FaceIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+                PrimitiveType = binaryreader.read_int(FileStream, 1)[0]
+                Node.FaceIndexCount = binaryreader.read_int(FileStream, 1)[0]
                 for i in range(Node.FaceIndexCount):
-                    FaceIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                    FaceIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                     Node.FaceIndexTable.append(FaceIndex)
 
-            Node.MaterialInfoCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.MaterialInfoCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.MaterialInfoCount):
                 MtrlTableInfo = datatypes.FMtrlTableInfo()
                 if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER9:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 else:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 Node.MaterialInfoTable.append(MtrlTableInfo)
             
             # @todo GetBipID
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v13(FEluNodeLoaderImpl_v12):
@@ -287,10 +287,10 @@ class FEluNodeLoaderImpl_v13(FEluNodeLoaderImpl_v12):
     def LoadEtc(self, Node, FileStream, Offset):
         super().LoadEtc(Node, FileStream, Offset)
         try:
-            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))        
+            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.read_float(FileStream, 3))
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v14(FEluNodeLoaderImpl_v13):
@@ -300,39 +300,39 @@ class FEluNodeLoaderImpl_v14(FEluNodeLoaderImpl_v13):
     
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            dwFVF = binaryreader.ReadUInt(FileStream, 1)[0]
+            dwFVF = binaryreader.read_unsigned_int(FileStream, 1)[0]
 
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
                 
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-                Vec4 = datatypes.FVector4.FromVec3(Vec)
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+                Vec4 = datatypes.FVector4.from_vec3(Vec)
                 Node.TangentTanTable.append(Vec4)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
                         
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
@@ -342,15 +342,15 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
     
     def LoadFace(self, Node, FileStream, Offset):
         try:
-            Node.FaceCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.FaceCount = binaryreader.read_int(FileStream, 1)[0]
             if(Node.FaceCount):
-                Node.TotalDegrees = binaryreader.ReadInt(FileStream, 1)[0]
-                Node.TotalTriangles = binaryreader.ReadInt(FileStream, 1)[0]
+                Node.TotalDegrees = binaryreader.read_int(FileStream, 1)[0]
+                Node.TotalTriangles = binaryreader.read_int(FileStream, 1)[0]
                 for i in range(Node.FaceCount):
                     MeshPolygonData = datatypes.FMeshPolygonData()
-                    MeshPolygonData.Vertices = binaryreader.ReadInt(FileStream, 1)[0]
+                    MeshPolygonData.Vertices = binaryreader.read_int(FileStream, 1)[0]
                     for j in range(MeshPolygonData.Vertices):
-                        UnsignedShorts = binaryreader.ReadUShort(FileStream, 6)
+                        UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 6)
                         FaceSubData = datatypes.FFaceSubData()
                         FaceSubData.p = UnsignedShorts[0]
                         FaceSubData.uv = UnsignedShorts[1]
@@ -359,72 +359,72 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
                         FaceSubData.n_tan = UnsignedShorts[4]
                         FaceSubData.n_bin = UnsignedShorts[5]
                         MeshPolygonData.FaceSubDatas.append(FaceSubData)
-                    MeshPolygonData.MaterialID = binaryreader.ReadShort(FileStream, 1)[0]
+                    MeshPolygonData.MaterialID = binaryreader.read_short(FileStream, 1)[0]
                     Node.PolygonTable.append(MeshPolygonData)
                 try:
                     assert Node.TotalDegrees == sum(len(MeshPolygonData.FaceSubDatas) \
                     for MeshPolygonData in Node.PolygonTable), \
                     "Assertion Failed: TotalDegrees value does not match expected value for node - {}".format(Node.NodeName)
                 except AssertionError as err:
-                    errorhandling.HandleAssertionError(err)
+                    errorhandling.handle_assertion_error(err)
                     
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            dwFVF = binaryreader.ReadUInt(FileStream, 1)[0]
-            LightMapID = binaryreader.ReadInt(FileStream, 1)[0]
+            dwFVF = binaryreader.read_unsigned_int(FileStream, 1)[0]
+            LightMapID = binaryreader.read_int(FileStream, 1)[0]
 
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
             
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
 
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-                Vec4 = datatypes.FVector4.FromVec3(Vec)
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+                Vec4 = datatypes.FVector4.from_vec3(Vec)
                 Node.TangentTanTable.append(Vec4)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
 
-            LightMapTexCoordTableCount = binaryreader.ReadInt(FileStream, 1)[0]
+            LightMapTexCoordTableCount = binaryreader.read_int(FileStream, 1)[0]
             FileStream.seek(FileStream.tell() + 3 * 4 * LightMapTexCoordTableCount)
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadEtc(self, Node, FileStream, Offset):
         try:
-            Node.BoneCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.BoneCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.BoneCount):
-                Matrix = datatypes.FMatrix(binaryreader.ReadFloat(FileStream, 16))
+                Matrix = datatypes.FMatrix(binaryreader.read_float(FileStream, 16))
                 Node.BoneTable.append(Matrix)
             
             for i in range(Node.BoneCount):
-                BoneIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                BoneIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                 Node.BoneTableIndices.append(BoneIndex)
             
-            Node.VertexIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.VertexIndexCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.VertexIndexCount):
                 VertexIndex = datatypes.FVertexIndex()
-                UnsignedShorts = binaryreader.ReadUShort(FileStream, 6)
+                UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 6)
                 VertexIndex.p = UnsignedShorts[0]
                 VertexIndex.n = UnsignedShorts[1]
                 VertexIndex.uv = UnsignedShorts[2]
@@ -436,37 +436,37 @@ class FEluNodeLoaderImpl_v15(FEluNodeLoaderImpl_v14):
             if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER12:
                 for i in range(Node.FaceCount):
                     for j in range(3):
-                        FaceIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                        FaceIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                         Node.FaceIndexTable.append(FaceIndex)  
                 Node.FaceIndexCount = Node.FaceCount * 3                  
             else:
-                PrimitiveType = binaryreader.ReadInt(FileStream, 1)[0]
-                Node.FaceIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+                PrimitiveType = binaryreader.read_int(FileStream, 1)[0]
+                Node.FaceIndexCount = binaryreader.read_int(FileStream, 1)[0]
                 for i in range(Node.FaceIndexCount):
-                    FaceIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                    FaceIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                     Node.FaceIndexTable.append(FaceIndex)
 
-            Node.MaterialInfoCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.MaterialInfoCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.MaterialInfoCount):
                 MtrlTableInfo = datatypes.FMtrlTableInfo()
                 if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER9:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 else:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 Node.MaterialInfoTable.append(MtrlTableInfo)
             
             # @todo GetBipID
-            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))  
+            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.read_float(FileStream, 3))
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v16(FEluNodeLoaderImpl_v15):
@@ -476,41 +476,41 @@ class FEluNodeLoaderImpl_v16(FEluNodeLoaderImpl_v15):
   
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            dwFVF = binaryreader.ReadUInt(FileStream, 1)[0]
-            LightMapID = binaryreader.ReadInt(FileStream, 1)[0]
+            dwFVF = binaryreader.read_unsigned_int(FileStream, 1)[0]
+            LightMapID = binaryreader.read_int(FileStream, 1)[0]
 
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
                 
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector4(binaryreader.ReadFloat(FileStream, 4))
+                Vec = datatypes.FVector4(binaryreader.read_float(FileStream, 4))
                 Node.TangentTanTable.append(Vec)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
 
-            LightMapTexCoordTableCount = binaryreader.ReadInt(FileStream, 1)[0]
+            LightMapTexCoordTableCount = binaryreader.read_int(FileStream, 1)[0]
             FileStream.seek(FileStream.tell() + 3 * 4 * LightMapTexCoordTableCount)
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v17(FEluNodeLoaderImpl_v16):
@@ -520,39 +520,39 @@ class FEluNodeLoaderImpl_v17(FEluNodeLoaderImpl_v16):
         
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            dwFVF = binaryreader.ReadUInt(FileStream, 1)[0]
-            LightMapID = binaryreader.ReadInt(FileStream, 1)[0]
+            dwFVF = binaryreader.read_unsigned_int(FileStream, 1)[0]
+            LightMapID = binaryreader.read_int(FileStream, 1)[0]
 
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
                 
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector4(binaryreader.ReadFloat(FileStream, 4))
+                Vec = datatypes.FVector4(binaryreader.read_float(FileStream, 4))
                 Node.TangentTanTable.append(Vec)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v18(FEluNodeLoaderImpl_v17):
@@ -562,41 +562,41 @@ class FEluNodeLoaderImpl_v18(FEluNodeLoaderImpl_v17):
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
                 
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector4(binaryreader.ReadFloat(FileStream, 4))
+                Vec = datatypes.FVector4(binaryreader.read_float(FileStream, 4))
                 Node.TangentTanTable.append(Vec)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
 
-            Node.TexCoordExtraCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordExtraCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordExtraCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordExtraTable.append(Vec)
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
 
 class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
@@ -606,74 +606,74 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
         
     def LoadName(self, Node, FileStream, Offset):
         try:
-            Node.NodeName = binaryreader.ReadWord(FileStream)
-            Node.ParentNodeID = binaryreader.ReadInt(FileStream, 1)[0]
-            Node.NodeParentName = binaryreader.ReadWord(FileStream)
+            Node.NodeName = binaryreader.read_word(FileStream)
+            Node.ParentNodeID = binaryreader.read_int(FileStream, 1)[0]
+            Node.NodeParentName = binaryreader.read_word(FileStream)
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
     
     def LoadInfo(self, Node, FileStream, Offset):
         try:
-            Node.LocalMatrix = datatypes.FMatrix(binaryreader.ReadFloat(FileStream, 16))
+            Node.LocalMatrix = datatypes.FMatrix(binaryreader.read_float(FileStream, 16))
 
-            Node.BaseVisibility = binaryreader.ReadFloat(FileStream, 1)[0]
-            Node.dwFlag = binaryreader.ReadUInt(FileStream, 1)[0]
+            Node.BaseVisibility = binaryreader.read_float(FileStream, 1)[0]
+            Node.dwFlag = binaryreader.read_unsigned_int(FileStream, 1)[0]
             try:
-                Node.MeshAlign = datatypes.RMeshAlign(binaryreader.ReadInt(FileStream, 1)[0])
+                Node.MeshAlign = datatypes.RMeshAlign(binaryreader.read_int(FileStream, 1)[0])
             except ValueError as er:
                 Message = "Node.MeshAlign value is out of allowed range."
-                filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
-            Node.LODProjectIndex = binaryreader.ReadInt(FileStream, 1)[0]
+                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
+            Node.LODProjectIndex = binaryreader.read_int(FileStream, 1)[0]
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadVertex(self, Node, FileStream, Offset):
         try:
-            Node.PointsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.PointsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.PointsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.PointsTable.append(Vec)
                 
             if Node.PointsCount:
-                Node.CalculateLocalBoundingBox()
+                Node.calculate_local_bounding_box()
                 
-            Node.TexCoordCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordTable.append(Vec)
 
-            Node.TexCoordExtraCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TexCoordExtraCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TexCoordExtraCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TexCoordExtraTable.append(Vec)
             
-            Node.NormalsCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.NormalsCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.NormalsCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.NormalsTable.append(Vec)
             
-            Node.TangentTanCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentTanCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentTanCount):
-                Vec = datatypes.FVector4(binaryreader.ReadFloat(FileStream, 4))
+                Vec = datatypes.FVector4(binaryreader.read_float(FileStream, 4))
                 Node.TangentTanTable.append(Vec)
                 
-            Node.TangentBinCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.TangentBinCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.TangentBinCount):
-                Vec = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
+                Vec = datatypes.FVector(binaryreader.read_float(FileStream, 3))
                 Node.TangentBinTable.append(Vec)
 
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)
 
     def LoadEtc(self, Node, FileStream, Offset):
         try:
-            PrimitiveType = binaryreader.ReadInt(FileStream, 1)[0]
+            PrimitiveType = binaryreader.read_int(FileStream, 1)[0]
 
-            Node.VertexIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.VertexIndexCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.VertexIndexCount):
                 VertexIndex = datatypes.FVertexIndex()
-                UnsignedShorts = binaryreader.ReadUShort(FileStream, 6)
+                UnsignedShorts = binaryreader.read_unsigned_short(FileStream, 6)
                 VertexIndex.p = UnsignedShorts[0]
                 VertexIndex.n = UnsignedShorts[1]
                 VertexIndex.uv = UnsignedShorts[2]
@@ -682,39 +682,39 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
                 VertexIndex.n_bin = UnsignedShorts[5]
                 Node.VertexIndexTable.append(VertexIndex)
 
-            Node.BoneCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.BoneCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.BoneCount):
-                Matrix = datatypes.FMatrix(binaryreader.ReadFloat(FileStream, 16))
+                Matrix = datatypes.FMatrix(binaryreader.read_float(FileStream, 16))
                 Node.BoneTable.append(Matrix)
             
             for i in range(Node.BoneCount):
-                BoneIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                BoneIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                 Node.BoneTableIndices.append(BoneIndex)
 
-            Node.MaterialInfoCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.MaterialInfoCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.MaterialInfoCount):
                 MtrlTableInfo = datatypes.FMtrlTableInfo()
                 if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER9:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 else:
-                    MtrlTableInfo.MaterialID = binaryreader.ReadInt(FileStream, 1)[0]
-                    MtrlTableInfo.Offset = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.Count = binaryreader.ReadUShort(FileStream, 1)[0]
-                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.ReadInt(FileStream, 1)[0]
+                    MtrlTableInfo.MaterialID = binaryreader.read_int(FileStream, 1)[0]
+                    MtrlTableInfo.Offset = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.Count = binaryreader.read_unsigned_short(FileStream, 1)[0]
+                    MtrlTableInfo.SubMaterialIDForDrawMasking = binaryreader.read_int(FileStream, 1)[0]
                 Node.MaterialInfoTable.append(MtrlTableInfo)
             
-            Node.FaceIndexCount = binaryreader.ReadInt(FileStream, 1)[0]
+            Node.FaceIndexCount = binaryreader.read_int(FileStream, 1)[0]
             for i in range(Node.FaceIndexCount):
-                FaceIndex = binaryreader.ReadUShort(FileStream, 1)[0]
+                FaceIndex = binaryreader.read_unsigned_short(FileStream, 1)[0]
                 Node.FaceIndexTable.append(FaceIndex)
             
             # @todo GetBipID
-            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))
-            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.ReadFloat(FileStream, 3))  
+            Node.BoundingBox.vmin = datatypes.FVector(binaryreader.read_float(FileStream, 3))
+            Node.BoundingBox.vmax = datatypes.FVector(binaryreader.read_float(FileStream, 3))
 
             # @todo fix bounding box
         except struct.error as err:
-            errorhandling.HandleStructUnpackError(err)
+            errorhandling.handle_struct_unpack_error(err)

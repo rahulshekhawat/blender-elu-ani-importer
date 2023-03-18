@@ -12,15 +12,15 @@ import filelogger
 import globalvars
 
 
-def HandleStructUnpackError(err):
-    Message = "Struct Unpack Error"
-    filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Error)
-    filelogger.CloseLogFileStream(globalvars.LogFileStream, filelogger.LogStreamEndReason.ProgramError)
+def handle_struct_unpack_error(err):
+    message = "Struct Unpack Error"
+    filelogger.add_log(globalvars.LogFileStream, message, filelogger.ELogMessageType.Log_Error)
+    filelogger.close_log_file_stream(globalvars.LogFileStream, filelogger.LogStreamEndReason.ProgramError)
     exit()
 
 
-def HandleAssertionError(err):
+def handle_assertion_error(err):
     Message = err.args[0]
-    filelogger.AddLog(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Error)
-    filelogger.CloseLogFileStream(globalvars.LogFileStream, filelogger.LogStreamEndReason.ProgramError)
+    filelogger.add_log(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Error)
+    filelogger.close_log_file_stream(globalvars.LogFileStream, filelogger.LogStreamEndReason.ProgramError)
     exit()
