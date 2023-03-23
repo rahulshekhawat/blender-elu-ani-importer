@@ -47,9 +47,9 @@ class FRaiderFilesManager:
         self.npc_eluxml_files: list[str] = []
         self.sfx_eluxml_files: list[str] = []
 
-        self.FillEluXmlFilesList()
+        self.fill_elu_xml_files_list()
 
-    def FillEluXmlFilesList(self):
+    def fill_elu_xml_files_list(self):
         self.monsters_eluxml_files = commonfunctions.find_files(self.MonstersDirPath, '.elu.xml')
         self.mapobject_eluxml_files = commonfunctions.find_files(self.StaticsDirPath, '.elu.xml')
         self.female_eluxml_files = commonfunctions.find_files(self.FemaleDirPath, '.elu.xml')
@@ -60,9 +60,9 @@ class FRaiderFilesManager:
         self.npc_eluxml_files = commonfunctions.find_files(self.NPCDirPath, '.elu.xml')
         self.sfx_eluxml_files = commonfunctions.find_files(self.SFXDirPath, '.elu.xml')
 
-    def RaiderFileObjectGenerator(self, eluxml_files):
+    def raider_file_object_generator(self, eluxml_files):
         for eluxml_file in eluxml_files:
-            raider_file_object = self.GetRaiderFileObject(eluxml_file)
+            raider_file_object = self.get_raider_file_object(eluxml_file)
             if raider_file_object is None:
                 base_eluxml_name = os.path.basename(eluxml_file)
                 message = "Couldn't find appropriate model and animation files related to - {0}".format(base_eluxml_name)
@@ -71,7 +71,7 @@ class FRaiderFilesManager:
             else:
                 yield raider_file_object
 
-    def GetRaiderFileObject(self, eluxml_file):
+    def get_raider_file_object(self, eluxml_file):
         eluxml_dir = os.path.dirname(eluxml_file)
         file_name = os.path.basename(eluxml_file)
         elu_object_name = file_name.split('.')[0].strip()
@@ -117,11 +117,12 @@ class FRaiderFilesManager:
         raider_file_object.object_xml_folder = raider_file_object.object_destination_folder + os.sep + elu_object_name + os.sep + 'elu_xml_files'
         raider_file_object.object_ani_folder = raider_file_object.object_destination_folder + os.sep + elu_object_name + os.sep + 'elu_animations'
         if raider_file_object.animation_xml_file is not None:
-            raider_file_object.ani_filenames = self.GetAniFilenames(raider_file_object.animation_xml_file)
-        raider_file_object.materials_list = self.GetMaterialsList(eluxml_file)
+            raider_file_object.ani_filenames = self.get_ani_filenames(raider_file_object.animation_xml_file)
+        raider_file_object.materials_list = self.get_materials_list(eluxml_file)
         return raider_file_object
 
-    def GetAniFilenames(self, animation_xml_file):
+    @staticmethod
+    def get_ani_filenames(animation_xml_file):
         animation_filenames = set()
         try:
             xml_tree = ETree.parse(animation_xml_file)
@@ -141,7 +142,8 @@ class FRaiderFilesManager:
 
         return animation_filenames
 
-    def GetMaterialsList(self, eluxml_file):
+    @staticmethod
+    def get_materials_list(eluxml_file):
         materials_list = []
         try:
             xml_tree = ETree.parse(eluxml_file)
