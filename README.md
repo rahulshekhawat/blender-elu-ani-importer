@@ -2,8 +2,8 @@
 
 This project contains scripts that can be used to load .elu models and .ani animations inside blender and to export them as fbx files either individually or in mass.
 
-* Compatible with all .elu versions
-* Compatible with all .ani versions
+* Compatible with all RaiderZ's .elu versions
+* Compatible with all RaiderZ's .ani versions
 * **Not** compatible with vertex animations (less than 0.5% of .ani files contain vertex animations).
 * ~~All exported fbx animations contain root motion~~ Root motion disabled. You can re-enable root motion in
 extracted animations by enabling the code below `# Root Motion` comment in [blenderfunctions.py](/elu-ani-importer/EluLibrary/blenderfunctions.py) 
