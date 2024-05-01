@@ -599,6 +599,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
             try:
                 bpy.ops.export_scene.fbx(filepath=dest_filepath,
                                          check_existing=True,
+                                         apply_scale_options='FBX_SCALE_UNITS',
                                          object_types={"ARMATURE"})
 
                 bpy.data.actions.remove(action, do_unlink=True)
@@ -713,6 +714,7 @@ def export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj):
     bpy.ops.export_scene.fbx(filepath=dest_filepath,
                              check_existing=True,
                              use_selection=False,
+                             apply_scale_options='FBX_SCALE_UNITS',
                              object_types=obj_types,
                              bake_anim=True)
 
