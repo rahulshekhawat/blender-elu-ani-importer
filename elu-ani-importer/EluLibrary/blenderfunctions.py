@@ -144,7 +144,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
         # Skip drawing col_oo and hide_oo meshes
         if "col_oo" in EluNode.NodeName or "hide_oo" in EluNode.NodeName or "hide" in EluNode.NodeName:
             continue
-        
+
         if EluNode.NodeName.startswith("Box00"):
             continue
 
@@ -280,7 +280,8 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
                     try:
                         elu_uv = EluNode.TexCoordTable[uv_index].get_vec_data_as_tuple()
                     except IndexError:
-                        print("Length of TexCoordTable : {0}, uv_index: {1}".format(len(EluNode.TexCoordTable), uv_index))
+                        print(
+                            "Length of TexCoordTable : {0}, uv_index: {1}".format(len(EluNode.TexCoordTable), uv_index))
                         print("Elu Version: {0}".format(elu_mesh_obj.EluHeader.Version))
                         raise AssertionError
                     blender_uv = [elu_uv[0], 1 - elu_uv[1]]
@@ -345,9 +346,9 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     pose_bone = pose.bones[EluNode.NodeName]
                     pose_bone.scale = Vector((0.001, 0.001, 0.001))
                     pose_bone.keyframe_insert(data_path='scale',
-                                            frame=0,
-                                            group=EluNode.NodeName)
-            
+                                              frame=0,
+                                              group=EluNode.NodeName)
+
             # Root motion
             """
             for AniNode in ani_mesh_obj.AniMeshNodes:
@@ -395,7 +396,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 try:
                     pose_bone = pose.bones[AniNode.Name]
                 except Exception:
-                    print ("Couldn't find pose bone: ", AniNode.Name)
+                    print("Couldn't find pose bone: ", AniNode.Name)
                     continue
 
                 frame = 0
@@ -416,14 +417,15 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         pose_bone.location = matrix_diff
 
                     pose_bone.keyframe_insert(data_path="location",
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 for i in range(AniNode.PositionKeyTrack.Count):
                     try:
                         frame = AniNode.PositionKeyTrack.Data[i].Frame / 160
                     except IndexError:
-                        print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data), ", count: ", AniNode.PositionKeyTrack.Count)
+                        print("index: ", i, ", length of positionkeytrack", len(AniNode.PositionKeyTrack.Data),
+                              ", count: ", AniNode.PositionKeyTrack.Count)
                         raise Exception
                     elu_position = AniNode.PositionKeyTrack.Data[i].Vector
                     position_vector = Vector(elu_position.get_vec_data_as_tuple())
@@ -440,8 +442,8 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         pose_bone.location = matrix_diff
 
                     pose_bone.keyframe_insert(data_path="location",
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 frame = 0
                 elu_quat = AniNode.BaseRotation
@@ -458,8 +460,8 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         pose_bone.rotation_quaternion = diff_quat
 
                     pose_bone.keyframe_insert(data_path='rotation_quaternion',
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 for i in range(AniNode.RotationKeyTrack.Count):
                     frame = AniNode.RotationKeyTrack.Data[i].Frame / 160
@@ -475,16 +477,16 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                         diff_quat = pbone_quat_inverted @ rot_quat
                         pose_bone.rotation_quaternion = diff_quat
                     pose_bone.keyframe_insert(data_path='rotation_quaternion',
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 frame = 0
                 elu_scale = AniNode.BaseScale
                 if elu_scale:
                     elu_scale = AniNode.BaseScale
                     pose_bone.keyframe_insert(data_path="scale",
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 for i in range(AniNode.ScaleKeyTrack.Count):
                     frame = AniNode.ScaleKeyTrack.Data[i].Frame / 160
@@ -493,8 +495,8 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     scale_vector = Vector(elu_scale.get_vec_data_as_tuple())
                     pose_bone.scale = scale_vector
                     pose_bone.keyframe_insert(data_path="scale",
-                                            frame=frame,
-                                            group=AniNode.Name)
+                                              frame=frame,
+                                              group=AniNode.Name)
 
                 # Begin visibility keyframes fix
                 source_frames = []
@@ -573,9 +575,9 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
 
                     if SET_VISKEY is True:
                         pose_bone.keyframe_insert(data_path="scale",
-                                                frame=frame,
-                                                group=AniNode.Name)
-            
+                                                  frame=frame,
+                                                  group=AniNode.Name)
+
             # Begin rotation bug (MBAE-3) fix
 
             """
@@ -583,7 +585,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
             for fcurve in fcurves:
                 for kf in fcurve.keyframe_points:
                     kf.interpolation = "CONSTANT"
-            """     
+            """
             # End rotation bug (MBAE-3) fix
             return
             bpy.ops.object.mode_set(mode="OBJECT")
@@ -596,12 +598,12 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
 
             try:
                 bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                        use_default_take=False,
-                                        check_existing=True,
-                                        version="ASCII6100",
-                                        object_types={"ARMATURE"},
-                                        use_anim=True,
-                                        use_anim_action_all=True)
+                                         use_default_take=False,
+                                         check_existing=True,
+                                         version="ASCII6100",
+                                         object_types={"ARMATURE"},
+                                         use_anim=True,
+                                         use_anim_action_all=True)
 
                 bpy.data.actions.remove(action, do_unlink=True)
             except Exception:
@@ -635,7 +637,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                 mesh.animation_data.action = action
 
                 data_path = "vertices[%d].co"
-                vec_z = Vector((0.0, 0.0, 1.0))               
+                vec_z = Vector((0.0, 0.0, 1.0))
 
                 """
                 if bpy.ops.object.mode_set.poll():
@@ -707,19 +709,16 @@ def export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj):
         assert os.path.isdir(raider_file_obj.object_model_folder)
     else:
         os.makedirs(raider_file_obj.object_model_folder)
-    
+
     dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
 
     # if raider_file_obj.has_animations():
     obj_types = {"ARMATURE", "MESH"}
     bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                use_selection=False,
-                                check_existing=True,
-                                version="ASCII6100",
-                                object_types=obj_types,
-                                # object_types={"ARMATURE", "MESH"},
-                                use_anim=False,
-                                use_anim_action_all=False)
+                             check_existing=True,
+                             use_selection=False,
+                             object_types=obj_types,
+                             bake_anim=True)
 
 
 def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
@@ -727,7 +726,7 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
         assert os.path.isdir(raider_file_obj.object_model_folder)
     else:
         os.makedirs(raider_file_obj.object_model_folder)
-        
+
     # MODULAR_PARTS = ["hair", "chest", "hands", "legs", "feet", "Dummy_eyes",
     #                 "hat_item", "chest_item", "hands_item", "legs_item", "feet_item", "back_item"]
 
@@ -749,30 +748,30 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
                 obj.select = True
                 mesh_found = True
                 modular_part_found = True
-                
+
         dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + "_" + item_name + ".fbx"
 
         if mesh_found:
             obj_types = {"ARMATURE", "MESH"}
             bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                        use_selection=True,
-                                        check_existing=True,
-                                        version="ASCII6100",
-                                        object_types=obj_types,
-                                        use_anim=False,
-                                        use_anim_action_all=False)
+                                     use_selection=True,
+                                     check_existing=True,
+                                     version="ASCII6100",
+                                     object_types=obj_types,
+                                     use_anim=False,
+                                     use_anim_action_all=False)
     if not modular_part_found:
         # if the for loop didn't break
         dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
         obj_types = {"ARMATURE", "MESH"}
         bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                    use_selection=False,
-                                    check_existing=True,
-                                    version="ASCII6100",
-                                    object_types=obj_types,
-                                    # object_types={"ARMATURE", "MESH"},
-                                    use_anim=False,
-                                    use_anim_action_all=False)
+                                 use_selection=False,
+                                 check_existing=True,
+                                 version="ASCII6100",
+                                 object_types=obj_types,
+                                 # object_types={"ARMATURE", "MESH"},
+                                 use_anim=False,
+                                 use_anim_action_all=False)
 
 
 def export_xml_files(raider_file_obj):
@@ -828,7 +827,7 @@ def generate_viskeys(frames_list, viskeys_list):
         except:
             break
         # print("Current_keyframe: {0}, next_keyframe: {1}, current_viskey: {2}, next_viskey: {3}".format(current_keyframe, next_keyframe, current_viskey, next_viskey))
-        
+
         if current_keyframe == next_keyframe:
             try:
                 assert current_viskey != next_viskey
@@ -886,5 +885,5 @@ def generate_viskeys(frames_list, viskeys_list):
         for tup in result_set:
             if frame == tup[0]:
                 result_viskeys.append(tup[1])
-    
+
     return result_frames, result_viskeys
