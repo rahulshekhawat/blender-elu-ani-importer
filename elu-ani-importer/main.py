@@ -95,25 +95,25 @@ def process_static_or_skeletal_elumodel(RaiderFileObj, AniFilePaths):
     blenderfunctions.export_xml_files(RaiderFileObj)
 
 
-def process_only_skeletal_elumodel(RaiderFileObj, AniFilePaths):
-    print("\nProcessing:", RaiderFileObj.elu_file)
+def process_only_skeletal_elumodel(raider_file_obj, ani_file_paths):
+    print("\nProcessing:", raider_file_obj.elu_file)
     blenderfunctions.clear_blender()
-    EluMeshObj = FEluMesh(RaiderFileObj.elu_file)
-    blenderfunctions.draw_elu_skeleton(EluMeshObj)
-    blender_materials = blenderfunctions.create_materials(RaiderFileObj.materials_list)
-    blenderfunctions.draw_elu_mesh(EluMeshObj, blender_materials)
-    blenderfunctions.export_only_skeletal_meshes(RaiderFileObj, EluMeshObj)
+    elu_mesh_obj = FEluMesh(raider_file_obj.elu_file)
+    blenderfunctions.draw_elu_skeleton(elu_mesh_obj)
+    blender_materials = blenderfunctions.create_materials(raider_file_obj.materials_list)
+    blenderfunctions.draw_elu_mesh(elu_mesh_obj, blender_materials)
+    blenderfunctions.export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj)
 
-    if RaiderFileObj.has_animations():
+    if raider_file_obj.has_animations():
         animations = []
-        for file_path in AniFilePaths:
-            for filename in RaiderFileObj.ani_filenames:
+        for file_path in ani_file_paths:
+            for filename in raider_file_obj.ani_filenames:
                 # Some files don't get detected because of lower/upper case issue. Hence using lower case for both
                 if filename.lower() in file_path.lower():
                     # if filename.lower() in file_path.lower() and "die" in file_path.lower():
                     animations.append(file_path)
-        blenderfunctions.load_and_export_animations(EluMeshObj, animations, RaiderFileObj)
-    blenderfunctions.export_xml_files(RaiderFileObj)
+        blenderfunctions.load_and_export_animations(elu_mesh_obj, animations, raider_file_obj)
+    blenderfunctions.export_xml_files(raider_file_obj)
 
 
 def process_modular_skeletal_elumodel(RaiderFileObj, AniFilePaths):

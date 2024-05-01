@@ -587,7 +587,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     kf.interpolation = "CONSTANT"
             """
             # End rotation bug (MBAE-3) fix
-            return
+
             bpy.ops.object.mode_set(mode="OBJECT")
 
             if os.path.exists(raider_file_obj.object_ani_folder):
@@ -598,12 +598,8 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
 
             try:
                 bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                         use_default_take=False,
                                          check_existing=True,
-                                         version="ASCII6100",
-                                         object_types={"ARMATURE"},
-                                         use_anim=True,
-                                         use_anim_action_all=True)
+                                         object_types={"ARMATURE"})
 
                 bpy.data.actions.remove(action, do_unlink=True)
             except Exception:
