@@ -5,11 +5,13 @@ This project contains scripts that can be used to load .elu models and .ani anim
 * Compatible with all .elu versions
 * Compatible with all .ani versions
 * **Not** compatible with vertex animations (less than 0.5% of .ani files contain vertex animations).
-* ~~All exported fbx animations contain root motion~~ Root motion disabled
+* ~~All exported fbx animations contain root motion~~ Root motion disabled. You can re-enable root motion in
+extracted animations by enabling the code below `# Root Motion` comment in [blenderfunctions.py](/elu-ani-importer/EluLibrary/blenderfunctions.py) 
 
 # Requirements
 
-* Blender 2.78 or 2.79. It won't work on 2.8 and above versions because of the Blender's API changes.
+* ~~Blender 2.78 or 2.79. It won't work on 2.8 and above versions because of the Blender's API changes.~~
+* I have now updated the main branch scripts and tested them on Blender 4.1, so they should work on Blender 4.1 and above. 
 
 # Using the script
 
