@@ -40,17 +40,17 @@ class FAniMesh:
 
     def load_and_parse_ani_file(self) -> None:
         ani_file_stream = open(self._source_file_path, 'rb')
-        self._ani_header.Signature = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
-        self._ani_header.Version = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
-        self._ani_header.MaxFrame = binaryreader.read_int(ani_file_stream, 1)[0]
-        self._ani_header.ModelNum = binaryreader.read_int(ani_file_stream, 1)[0]
-        self._ani_header.AniType = EAnimationType(binaryreader.read_int(ani_file_stream, 1)[0])
+        self._ani_header.signature = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
+        self._ani_header.version = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
+        self._ani_header.max_frame = binaryreader.read_int(ani_file_stream, 1)[0]
+        self._ani_header.model_num = binaryreader.read_int(ani_file_stream, 1)[0]
+        self._ani_header.ani_type = EAnimationType(binaryreader.read_int(ani_file_stream, 1)[0])
 
-        print(f"Currently parsing .ani file: {self._source_file_path}.\n Version: {self._ani_header.Version}, maxframe: {self._ani_header.MaxFrame}, type: {self._ani_header.AniType}")
+        print(f"Currently parsing .ani file: {self._source_file_path}.\n Version: {self._ani_header.version}, maxframe: {self._ani_header.max_frame}, type: {self._ani_header.ani_type}")
 
-        globalvars.CurrentAniFileVersion = self._ani_header.Version
+        globalvars.CurrentAniFileVersion = self._ani_header.version
 
-        if self._ani_header.Version != raidflags.EXPORTER_CURRENT_ANI_VER:
+        if self._ani_header.version != raidflags.EXPORTER_CURRENT_ANI_VER:
             # @todo add warning - ani not latest version
             pass
 
@@ -71,12 +71,12 @@ class FAniMesh:
             # @todo ani version error
             pass
 
-        for i in range(self._ani_header.ModelNum):
+        for i in range(self._ani_header.model_num):
             ani_node = FAniNode()
-            if self._ani_header.AniType == EAnimationType.RAniType_Vertex:
+            if self._ani_header.ani_type == EAnimationType.RAniType_Vertex:
                 # if self.AniHeader.AniType == 1:
                 loader_obj.LoadVertexAni(ani_node, ani_file_stream)
-            elif self._ani_header.AniType == EAnimationType.RAniType_Bone:
+            elif self._ani_header.ani_type == EAnimationType.RAniType_Bone:
                 # elif self.AniHeader.AniType == 2:
                 loader_obj.LoadBoneAni(ani_node, ani_file_stream)
                 if ani_node.Name == "Bip01":
