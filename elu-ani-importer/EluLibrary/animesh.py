@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-# pylint: disable=C0111
-# pylint: disable=C0103
-# pylint: disable=W0703
-# pylint: disable=W0614
-# pylint: disable=W0612
 
 """
+This module contains the primary data type (FAniMesh) to load .ani files
 """
 
-import os
 import aniparser
 import raidflags
 import globalvars
 import binaryreader
 import commonfunctions
-import errorhandling
 from datatypes import FAniHeader
 from datatypes import FAniNode
 from datatypes import EAnimationType
@@ -22,67 +16,76 @@ from datatypes import EAnimationType
 
 class FAniMesh:
 
-    def __init__(self, FilePath):
-        self.AniHeader = FAniHeader()
-        self.AniMeshNodes = []
-        self.AniRootNode = None
-        self.FilePath = FilePath
-        self.SourceDir = os.path.dirname(FilePath)
-        self.SourceFile = os.path.basename(FilePath)
-        try:
-            assert commonfunctions.get_file_extension(self.FilePath) == '.ani', \
-            "Assertion Failed: File extension is not .ani, FilePath: {0}".format(FilePath)
-        except AssertionError as err:
-            errorhandling.handle_assertion_error(err)
-        self.AniFileStream = open(FilePath, 'rb')
-        self.LoadAndParseAniFile()
+    def __init__(self, file_path: str):
+        assert commonfunctions.is_valid_file_path(file_path), f"{file_path} is not a valid file path."
+        assert commonfunctions.get_file_extension(file_path) == ".ani", f"{file_path} is not a .ani file type."
+        self._source_file_path: str = file_path
+        self._ani_header: FAniHeader = FAniHeader()
+        self._ani_mesh_nodes = []
+        self._ani_root_node = None
+        self._loaded: bool = False
 
-    def LoadAndParseAniFile(self):
-        self.AniHeader.Signature = binaryreader.read_unsigned_int(self.AniFileStream, 1)[0]
-        self.AniHeader.Version = binaryreader.read_unsigned_int(self.AniFileStream, 1)[0]
-        self.AniHeader.MaxFrame = binaryreader.read_int(self.AniFileStream, 1)[0]
-        self.AniHeader.ModelNum = binaryreader.read_int(self.AniFileStream, 1)[0]
-        # self.AniHeader.AniType = binaryreader.read_int(self.AniFileStream, 1)[0]
-        self.AniHeader.AniType = EAnimationType(binaryreader.read_int(self.AniFileStream, 1)[0])
+    def is_valid(self) -> bool:
+        """
+        Determines if this is a valid AniMesh object.
+        :return: True if this AniMesh object contains a valid source file path
+        """
+        return commonfunctions.is_valid_file_path(self._source_file_path)
 
-        print("Ani Version: {0}, ani maxframe: {1}, ani anitype: {2}".format(self.AniHeader.Version, self.AniHeader.MaxFrame, self.AniHeader.AniType))
+    def is_loaded(self) -> bool:
+        """
+        :return: True if the AniMesh data has been loaded into the memory from the source file.
+        """
+        return self._loaded
 
-        globalvars.CurrentAniFileVersion = self.AniHeader.Version
+    def load_and_parse_ani_file(self) -> None:
+        ani_file_stream = open(self._source_file_path, 'rb')
+        self._ani_header.Signature = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
+        self._ani_header.Version = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
+        self._ani_header.MaxFrame = binaryreader.read_int(ani_file_stream, 1)[0]
+        self._ani_header.ModelNum = binaryreader.read_int(ani_file_stream, 1)[0]
+        self._ani_header.AniType = EAnimationType(binaryreader.read_int(ani_file_stream, 1)[0])
 
-        if self.AniHeader.Version != raidflags.EXPORTER_CURRENT_ANI_VER:
+        print(f"Currently parsing .ani file: {self._source_file_path}.\n Version: {self._ani_header.Version}, maxframe: {self._ani_header.MaxFrame}, type: {self._ani_header.AniType}")
+
+        globalvars.CurrentAniFileVersion = self._ani_header.Version
+
+        if self._ani_header.Version != raidflags.EXPORTER_CURRENT_ANI_VER:
             # @todo add warning - ani not latest version
             pass
 
-        LoaderObj = None
+        loader_obj = None
         if globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER12:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v12()
+            loader_obj = aniparser.FAniFileLoaderImpl_v12()
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER11:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v11()
+            loader_obj = aniparser.FAniFileLoaderImpl_v11()
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER9:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v9()
+            loader_obj = aniparser.FAniFileLoaderImpl_v9()
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER8:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v7()
+            loader_obj = aniparser.FAniFileLoaderImpl_v7()
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER7:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v7()
+            loader_obj = aniparser.FAniFileLoaderImpl_v7()
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER6:
-            LoaderObj = aniparser.FAniFileLoaderImpl_v6()
+            loader_obj = aniparser.FAniFileLoaderImpl_v6()
         else:
             # @todo ani version error
             pass
 
-        for i in range(self.AniHeader.ModelNum):
-            AniNode = FAniNode()
-            if self.AniHeader.AniType == EAnimationType.RAniType_Vertex:
+        for i in range(self._ani_header.ModelNum):
+            ani_node = FAniNode()
+            if self._ani_header.AniType == EAnimationType.RAniType_Vertex:
                 # if self.AniHeader.AniType == 1:
-                LoaderObj.LoadVertexAni(AniNode, self.AniFileStream)
-            elif self.AniHeader.AniType == EAnimationType.RAniType_Bone:
+                loader_obj.LoadVertexAni(ani_node, ani_file_stream)
+            elif self._ani_header.AniType == EAnimationType.RAniType_Bone:
                 # elif self.AniHeader.AniType == 2:
-                LoaderObj.LoadBoneAni(AniNode, self.AniFileStream)
-                if AniNode.Name == "Bip01":
-                    self.AniRootNode = AniNode
+                loader_obj.LoadBoneAni(ani_node, ani_file_stream)
+                if ani_node.Name == "Bip01":
+                    self._ani_root_node = ani_node
             else:
                 # @todo 
                 pass
-            LoaderObj.LoadVisibilityKey(AniNode, self.AniFileStream)
-            self.AniMeshNodes.append(AniNode)
-        return
+            loader_obj.LoadVisibilityKey(ani_node, ani_file_stream)
+            self._ani_mesh_nodes.append(ani_node)
+
+        self._loaded = True
+        ani_file_stream.close()

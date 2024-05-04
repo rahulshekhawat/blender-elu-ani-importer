@@ -309,11 +309,12 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
 
     for animation in animations:
         ani_mesh_obj = FAniMesh(animation)
+        ani_mesh_obj.load_and_parse_ani_file()
 
-        if ani_mesh_obj.AniHeader.AniType == datatypes.EAnimationType.RAniType_Bone:
+        if ani_mesh_obj._ani_header.AniType == datatypes.EAnimationType.RAniType_Bone:
             scene = bpy.context.scene
             scene.frame_start = 0
-            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+            scene.frame_end = ani_mesh_obj._ani_header.MaxFrame
             set_active_blender_object(armature_object)
 
             animation_basename = os.path.basename(animation)
@@ -392,7 +393,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     except Exception:
                         pass
             """
-            for AniNode in ani_mesh_obj.AniMeshNodes:
+            for AniNode in ani_mesh_obj._ani_mesh_nodes:
                 try:
                     pose_bone = pose.bones[AniNode.Name]
                 except Exception:
@@ -525,7 +526,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     vis_key = AniNode.VisKeyTrack.Data[i].Vis
 
                     SET_VISKEY = False
-                    if 0 <= int(frame) <= ani_mesh_obj.AniHeader.MaxFrame:
+                    if 0 <= int(frame) <= ani_mesh_obj._ani_header.MaxFrame:
                         if int(frame) == 0:
                             if round(vis_key) == 0:
                                 if pose_bone.scale == Vector((1, 1, 1)):
@@ -537,7 +538,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                                 if pose_bone.scale == Vector((0, 0, 0)):
                                     pose_bone.scale = Vector((1, 1, 1))
                                     SET_VISKEY = True
-                        elif int(frame) == ani_mesh_obj.AniHeader.MaxFrame:
+                        elif int(frame) == ani_mesh_obj._ani_header.MaxFrame:
                             if round(vis_key) == 0:
                                 # if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
                                 #    pose_bone.scale = Vector((0.001, 0.001, 0.001))
@@ -613,9 +614,9 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
             # @todo vertex animation
             scene = bpy.context.scene
             scene.frame_start = 0
-            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+            scene.frame_end = ani_mesh_obj._ani_header.MaxFrame
 
-            for AniNode in ani_mesh_obj.AniMeshNodes:
+            for AniNode in ani_mesh_obj._ani_mesh_nodes:
                 mesh = None
                 try:
                     mesh_obj = bpy.data.objects[AniNode.Name + '-mesh']
