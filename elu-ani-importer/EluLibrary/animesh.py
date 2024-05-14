@@ -12,6 +12,7 @@ import commonfunctions
 from datatypes import FAniHeader
 from datatypes import FAniNode
 from datatypes import EAnimationType
+from filelogger import FileLogger
 
 
 class FAniMesh:
@@ -39,6 +40,7 @@ class FAniMesh:
         return self._loaded
 
     def load_and_parse_ani_file(self) -> None:
+        logger = FileLogger()
         ani_file_stream = open(self._source_file_path, 'rb')
         self._ani_header.signature = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
         self._ani_header.version = binaryreader.read_unsigned_int(ani_file_stream, 1)[0]
@@ -46,13 +48,15 @@ class FAniMesh:
         self._ani_header.model_num = binaryreader.read_int(ani_file_stream, 1)[0]
         self._ani_header.ani_type = EAnimationType(binaryreader.read_int(ani_file_stream, 1)[0])
 
-        print(f"Currently parsing .ani file: {self._source_file_path}.\n Version: {self._ani_header.version}, maxframe: {self._ani_header.max_frame}, type: {self._ani_header.ani_type}")
+        log_string = (f"Currently parsing .ani file: {self._source_file_path}.\n Version: {self._ani_header.version}, "
+                      f"maxframe: {self._ani_header.max_frame}, type: {self._ani_header.ani_type}")
+        logger.log_info(log_string)
 
         globalvars.CurrentAniFileVersion = self._ani_header.version
 
         if self._ani_header.version != raidflags.EXPORTER_CURRENT_ANI_VER:
-            # @todo add warning - ani not latest version
-            pass
+            log_string = f"Animation data in file {self._source_file_path} is not the latest version"
+            logger.log_warning(log_string)
 
         loader_obj = None
         if globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER12:
@@ -68,8 +72,10 @@ class FAniMesh:
         elif globalvars.CurrentAniFileVersion == raidflags.EXPORTER_ANI_VER6:
             loader_obj = aniparser.FAniFileLoaderImpl_v6()
         else:
-            # @todo ani version error
-            pass
+            log_string = (f"Animation data in file {self._source_file_path} does not match any supported versions. "
+                          f"Skipping!!!")
+            logger.log_error(log_string)
+            return
 
         for i in range(self._ani_header.model_num):
             ani_node = FAniNode()

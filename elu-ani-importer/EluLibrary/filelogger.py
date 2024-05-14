@@ -9,26 +9,51 @@ This module contains functionality to add and save logs to files
 """
 
 import os
-import shutil
 import enum
 from commonfunctions import get_current_time_as_string
+
+
+class FileLogger:
+
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __init__(self):
+        self._log_file_path = get_current_time_as_string()
+        # Replace all spaces and semicolons in FileName with hyphen
+        self._log_file_path = self._log_file_path.replace(' ', '-')
+        self._log_file_path = self._log_file_path.replace(':', '-')
+        self._log_file_path += '.md'
+        self._log_file_path = os.getcwd() + os.sep + 'logs' + os.sep + self._log_file_path
+        self._log_file_stream = open(self._log_file_path, 'a+')
+
+    def __del__(self):
+        self._log_file_stream.close()
+
+    def log_info(self, log_string: str):
+        log_message = "[" + get_current_time_as_string() + "] " + "[LOG]" + log_string
+        self._log_file_stream.write(log_message)
+        self._log_file_stream.flush()
+
+    def log_warning(self, log_string: str):
+        log_message = "[" + get_current_time_as_string() + "] " + "[WARNING]" + log_string
+        self._log_file_stream.write(log_message)
+        self._log_file_stream.flush()
+
+    def log_error(self, log_string: str):
+        log_message = "[" + get_current_time_as_string() + "] " + "[ERROR]" + log_string
+        self._log_file_stream.write(log_message)
+        self._log_file_stream.flush()
 
 
 class LogStreamEndReason(enum.Enum):
     LogFinished = 0
     LogError = 1
     ProgramError = 2
-
-
-class LogType(enum.Enum):
-    """
-    Deprecated. Don't use it.
-    """
-    LogType_None = 0
-    LogType_General = 1
-    LogType_Warning = 2
-    LogType_Error = 3
-    LogType_Meta = 4
 
 
 class ELogMessageType(enum.Enum):
@@ -111,67 +136,6 @@ def close_log_file_stream(log_stream, reason=LogStreamEndReason):
         message = "\n\nAn error was encountered amid logging task. Log stream closed.\n\n"
 
     add_log(log_stream, message, ELogMessageType.Log_NoFormat)
-
-    # We want the program to crash if LogStream.close() throws an exception here. 
-    log_stream.close()
-    return
-
-
-def add_log_deprecated(file_stream, message, log_type=LogType.LogType_General):
-    """
-    Returns true if message was added successfully to LogFile
-    """
-    # Add time stamp to message
-
-    if log_type == LogType.LogType_None:
-        pass
-    elif log_type == LogType.LogType_General:
-        message = "general - " + message
-    elif log_type == LogType.LogType_Warning:
-        message = "warning - " + message
-    elif log_type == LogType.LogType_Error:
-        message = "error - " + message
-    else:
-        pass
-
-    if log_type != LogType.LogType_Meta:
-        message = '[' + get_current_time_as_string() + ']: ' + message + '\n'
-    else:
-        pass
-
-    try:
-        file_stream.write(message)
-        file_stream.flush()
-        return True
-    except:
-        # @todo remove bare 'except'
-        return False
-
-
-def close_log_file_stream_deprecated(log_stream, reason=LogStreamEndReason.LogFinished) -> None:
-    """
-    Adds a final log message to logstream and closes it.
-    """
-    """
-    If log stream is being closed because of a logging error, for example if the
-    logstream is not open.
-    """
-    if reason == LogStreamEndReason.LogError:
-        # We don't want the program to crash even if LogStream.close() throws an exception.
-        # Because we are already aware that LogStream is being closed due to a LogError
-        try:
-            log_stream.close()
-        except Exception as Ex:
-            print(Ex)
-            pass
-        return
-
-    if reason == LogStreamEndReason.LogFinished:
-        message = "Data logger completed logging task successfully. Log stream closed.\n\n\n"
-    elif reason == LogStreamEndReason.ProgramError:
-        message = "An error was encountered amid logging task. Log stream closed.\n\n\n"
-
-    add_log(log_stream, message)
 
     # We want the program to crash if LogStream.close() throws an exception here. 
     log_stream.close()
