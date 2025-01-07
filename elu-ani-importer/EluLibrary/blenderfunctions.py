@@ -282,7 +282,7 @@ def draw_elu_mesh(elu_mesh_obj, blender_materials):
                     except IndexError:
                         print(
                             "Length of TexCoordTable : {0}, uv_index: {1}".format(len(EluNode.TexCoordTable), uv_index))
-                        print("Elu Version: {0}".format(elu_mesh_obj.EluHeader.Version))
+                        print("Elu Version: {0}".format(elu_mesh_obj.EluHeader.version))
                         raise AssertionError
                     blender_uv = [elu_uv[0], 1 - elu_uv[1]]
                     loop_uv.uv = blender_uv
@@ -309,11 +309,12 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
 
     for animation in animations:
         ani_mesh_obj = FAniMesh(animation)
+        ani_mesh_obj.load_and_parse_ani_file()
 
-        if ani_mesh_obj.AniHeader.AniType == datatypes.EAnimationType.RAniType_Bone:
+        if ani_mesh_obj._ani_header.ani_type == datatypes.EAnimationType.RAniType_Bone:
             scene = bpy.context.scene
             scene.frame_start = 0
-            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+            scene.frame_end = ani_mesh_obj._ani_header.max_frame
             set_active_blender_object(armature_object)
 
             animation_basename = os.path.basename(animation)
@@ -392,7 +393,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     except Exception:
                         pass
             """
-            for AniNode in ani_mesh_obj.AniMeshNodes:
+            for AniNode in ani_mesh_obj._ani_mesh_nodes:
                 try:
                     pose_bone = pose.bones[AniNode.Name]
                 except Exception:
@@ -525,7 +526,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                     vis_key = AniNode.VisKeyTrack.Data[i].Vis
 
                     SET_VISKEY = False
-                    if 0 <= int(frame) <= ani_mesh_obj.AniHeader.MaxFrame:
+                    if 0 <= int(frame) <= ani_mesh_obj._ani_header.max_frame:
                         if int(frame) == 0:
                             if round(vis_key) == 0:
                                 if pose_bone.scale == Vector((1, 1, 1)):
@@ -537,7 +538,7 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
                                 if pose_bone.scale == Vector((0, 0, 0)):
                                     pose_bone.scale = Vector((1, 1, 1))
                                     SET_VISKEY = True
-                        elif int(frame) == ani_mesh_obj.AniHeader.MaxFrame:
+                        elif int(frame) == ani_mesh_obj._ani_header.max_frame:
                             if round(vis_key) == 0:
                                 # if pose_bone.scale == Vector((0.001, 0.001, 0.001)):
                                 #    pose_bone.scale = Vector((0.001, 0.001, 0.001))
@@ -613,9 +614,9 @@ def load_and_export_animations(elu_mesh_obj, animations, raider_file_obj):
             # @todo vertex animation
             scene = bpy.context.scene
             scene.frame_start = 0
-            scene.frame_end = ani_mesh_obj.AniHeader.MaxFrame
+            scene.frame_end = ani_mesh_obj._ani_header.max_frame
 
-            for AniNode in ani_mesh_obj.AniMeshNodes:
+            for AniNode in ani_mesh_obj._ani_mesh_nodes:
                 mesh = None
                 try:
                     mesh_obj = bpy.data.objects[AniNode.Name + '-mesh']
@@ -663,13 +664,11 @@ def export_mesh(raider_file_obj, elu_mesh_obj):
         # if raider_file_obj.has_animations():
         obj_types = {"ARMATURE", "MESH"}
         bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                 use_selection=False,
                                  check_existing=True,
-                                 version="ASCII6100",
+                                 use_selection=False,
+                                 apply_scale_options='FBX_SCALE_UNITS',
                                  object_types=obj_types,
-                                 # object_types={"ARMATURE", "MESH"},
-                                 use_anim=False,
-                                 use_anim_action_all=False)
+                                 bake_anim=True)
     else:
         obj_types = {"MESH"}
         # current_scene = bpy.context.scene
@@ -681,24 +680,22 @@ def export_mesh(raider_file_obj, elu_mesh_obj):
 
         for index in LOD_Indices:
             for obj in bpy.data.objects:
-                obj.select = False
+                obj.select_set(False)
 
             for EluNode in elu_mesh_obj.EluMeshNodes:
                 if EluNode.LODProjectIndex == index:
                     for obj in bpy.data.objects:
                         if obj.name == EluNode.NodeName + "-mesh":
-                            obj.select = True
+                            obj.select_set(True)
             dest_filepath = raider_file_obj.object_model_folder + os.sep + "S_" + \
                             raider_file_obj.object_name + "_LOD" + str(index) + ".fbx"
 
             bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                     use_selection=True,
                                      check_existing=True,
-                                     version="ASCII6100",
+                                     use_selection=True,
+                                     apply_scale_options='FBX_SCALE_UNITS',
                                      object_types=obj_types,
-                                     # object_types={"ARMATURE", "MESH"},
-                                     use_anim=False,
-                                     use_anim_action_all=False)
+                                     bake_anim=False)
 
 
 def export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj):
@@ -734,16 +731,17 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
     modular_part_found = False
     for item_name in MODULAR_PARTS:
         for obj in bpy.data.objects:
-            obj.select = False
+            obj.select_set(False)
         for obj in bpy.data.objects:
             if obj.type == "ARMATURE":
+                obj.select_set(True)
                 amt = obj.data
                 for bone in amt.bones:
                     bone.select = True
         mesh_found = False
         for obj in bpy.data.objects:
             if obj.name == item_name + '-mesh' or obj.name == item_name + "_item" + '-mesh':
-                obj.select = True
+                obj.select_set(True)
                 mesh_found = True
                 modular_part_found = True
 
@@ -752,24 +750,21 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
         if mesh_found:
             obj_types = {"ARMATURE", "MESH"}
             bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                     use_selection=True,
                                      check_existing=True,
-                                     version="ASCII6100",
+                                     use_selection=True,
+                                     apply_scale_options='FBX_SCALE_UNITS',
                                      object_types=obj_types,
-                                     use_anim=False,
-                                     use_anim_action_all=False)
+                                     bake_anim=True)
     if not modular_part_found:
         # if the for loop didn't break
         dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
         obj_types = {"ARMATURE", "MESH"}
         bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                 use_selection=False,
                                  check_existing=True,
-                                 version="ASCII6100",
+                                 use_selection=False,
+                                 apply_scale_options='FBX_SCALE_UNITS',
                                  object_types=obj_types,
-                                 # object_types={"ARMATURE", "MESH"},
-                                 use_anim=False,
-                                 use_anim_action_all=False)
+                                 bake_anim=True)
 
 
 def export_xml_files(raider_file_obj):

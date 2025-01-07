@@ -69,7 +69,7 @@ class FEluNodeLoaderImpl_v12(FEluNodeLoaderImpl):
                 Node.MeshAlign = datatypes.RMeshAlign(binaryreader.read_int(FileStream, 1)[0])
             except ValueError as er:
                 Message = "Node.MeshAlign value is out of allowed range."
-                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
+                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Warning)
             
             if globalvars.CurrentEluFileVersion < raidflags.EXPORTER_MESH_VER11:
                 # Unused data
@@ -622,7 +622,7 @@ class FEluNodeLoaderImpl_v20(FEluNodeLoaderImpl_v18):
                 Node.MeshAlign = datatypes.RMeshAlign(binaryreader.read_int(FileStream, 1)[0])
             except ValueError as er:
                 Message = "Node.MeshAlign value is out of allowed range."
-                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.LogType.LogType_Warning)
+                filelogger.add_log(globalvars.LogFileStream, Message, filelogger.ELogMessageType.Log_Warning)
             Node.LODProjectIndex = binaryreader.read_int(FileStream, 1)[0]
 
         except struct.error as err:

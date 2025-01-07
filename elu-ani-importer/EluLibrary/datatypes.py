@@ -1,17 +1,10 @@
 #!/usr/bin/env python3
-# pylint: disable=C0111
-# pylint: disable=C0103
-# pylint: disable=W0703
-# pylint: disable=W0614
-# pylint: disable=W0612
 
 """
+This module contains common data types for use in elu-ani-importer
 """
 
-import os
 import enum
-import raidflags
-import binaryreader
 import globalvars
 import struct
 
@@ -113,7 +106,7 @@ class FVertexIndex:
         self.n_bin: int = 0
 
 
-class FvertexindexV12:
+class FVertexIndexV12:
 
     def __init__(self):
         self.p: int = 0
@@ -253,11 +246,11 @@ class FEluHeader:
 class FAniHeader:
 
     def __init__(self):
-        self.Signature = 0
-        self.Version = 0
-        self.MaxFrame = 0
-        self.ModelNum = 0
-        self.AniType = 0
+        self.signature = 0
+        self.version = 0
+        self.max_frame = 0
+        self.model_num = 0
+        self.ani_type = 0
 
 
 class FVecKey:
