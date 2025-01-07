@@ -664,13 +664,11 @@ def export_mesh(raider_file_obj, elu_mesh_obj):
         # if raider_file_obj.has_animations():
         obj_types = {"ARMATURE", "MESH"}
         bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                 use_selection=False,
                                  check_existing=True,
-                                 version="ASCII6100",
+                                 use_selection=False,
+                                 apply_scale_options='FBX_SCALE_UNITS',
                                  object_types=obj_types,
-                                 # object_types={"ARMATURE", "MESH"},
-                                 use_anim=False,
-                                 use_anim_action_all=False)
+                                 bake_anim=True)
     else:
         obj_types = {"MESH"}
         # current_scene = bpy.context.scene
@@ -682,24 +680,22 @@ def export_mesh(raider_file_obj, elu_mesh_obj):
 
         for index in LOD_Indices:
             for obj in bpy.data.objects:
-                obj.select = False
+                obj.select_set(False)
 
             for EluNode in elu_mesh_obj.EluMeshNodes:
                 if EluNode.LODProjectIndex == index:
                     for obj in bpy.data.objects:
                         if obj.name == EluNode.NodeName + "-mesh":
-                            obj.select = True
+                            obj.select_set(True)
             dest_filepath = raider_file_obj.object_model_folder + os.sep + "S_" + \
                             raider_file_obj.object_name + "_LOD" + str(index) + ".fbx"
 
             bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                     use_selection=True,
                                      check_existing=True,
-                                     version="ASCII6100",
+                                     use_selection=True,
+                                     apply_scale_options='FBX_SCALE_UNITS',
                                      object_types=obj_types,
-                                     # object_types={"ARMATURE", "MESH"},
-                                     use_anim=False,
-                                     use_anim_action_all=False)
+                                     bake_anim=False)
 
 
 def export_only_skeletal_meshes(raider_file_obj, elu_mesh_obj):
@@ -735,16 +731,17 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
     modular_part_found = False
     for item_name in MODULAR_PARTS:
         for obj in bpy.data.objects:
-            obj.select = False
+            obj.select_set(False)
         for obj in bpy.data.objects:
             if obj.type == "ARMATURE":
+                obj.select_set(True)
                 amt = obj.data
                 for bone in amt.bones:
                     bone.select = True
         mesh_found = False
         for obj in bpy.data.objects:
             if obj.name == item_name + '-mesh' or obj.name == item_name + "_item" + '-mesh':
-                obj.select = True
+                obj.select_set(True)
                 mesh_found = True
                 modular_part_found = True
 
@@ -753,24 +750,21 @@ def export_modular_skeletal_meshses(raider_file_obj, elu_mesh_obj):
         if mesh_found:
             obj_types = {"ARMATURE", "MESH"}
             bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                     use_selection=True,
                                      check_existing=True,
-                                     version="ASCII6100",
+                                     use_selection=True,
+                                     apply_scale_options='FBX_SCALE_UNITS',
                                      object_types=obj_types,
-                                     use_anim=False,
-                                     use_anim_action_all=False)
+                                     bake_anim=True)
     if not modular_part_found:
         # if the for loop didn't break
         dest_filepath = raider_file_obj.object_model_folder + os.sep + "SK_" + raider_file_obj.object_name + ".fbx"
         obj_types = {"ARMATURE", "MESH"}
         bpy.ops.export_scene.fbx(filepath=dest_filepath,
-                                 use_selection=False,
                                  check_existing=True,
-                                 version="ASCII6100",
+                                 use_selection=False,
+                                 apply_scale_options='FBX_SCALE_UNITS',
                                  object_types=obj_types,
-                                 # object_types={"ARMATURE", "MESH"},
-                                 use_anim=False,
-                                 use_anim_action_all=False)
+                                 bake_anim=True)
 
 
 def export_xml_files(raider_file_obj):
